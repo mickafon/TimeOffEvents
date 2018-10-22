@@ -61,30 +61,26 @@ module Logic =
             | PendingValidation _
             | Validated _ -> true
 
-    let evolve state event =
+    type UserRequestsState = Map<Guid, RequestState>
+
+    let evolveRequest state event =
         match event with
         | RequestCreated request -> PendingValidation request
         | RequestValidated request -> Validated request
 
-    let getRequestState requestEvents =
-        requestEvents |> Seq.fold evolve NotCreated
+    let evolveUserRequests (userRequests: UserRequestsState) (event: RequestEvent) =
+        let requestState = defaultArg (Map.tryFind event.Request.RequestId userRequests) NotCreated
+        let newRequestState = evolveRequest requestState event
+        userRequests.Add (event.Request.RequestId, newRequestState)
 
-    // This function builds a map (i.e. a dictionary)
-    // of request states by request id, from all events
-    // associated to a user's requests
-    let getAllRequests userRequestsEvents =
-        let folder requests (event: RequestEvent) =
-            let state = defaultArg (Map.tryFind event.Request.RequestId requests) NotCreated
-            let newState = evolve state event
-            requests.Add (event.Request.RequestId, newState)
+    let overlapsWith request1 request2 =
+        false //TODO: write a function that checks if 2 requests overlap
 
-        userRequestsEvents |> Seq.fold folder Map.empty
-
-    let overlapWithAnyRequest (otherRequests: TimeOffRequest seq) request =
-        false //TODO
+    let overlapsWithAnyRequest (otherRequests: TimeOffRequest seq) request =
+        false //TODO: write this function using overlapsWith
 
     let createRequest activeUserRequests  request =
-        if overlapWithAnyRequest activeUserRequests  request then
+        if request |> overlapsWithAnyRequest activeUserRequests then
             Error "Overlapping request"
         // This DateTime.Today must go away!
         elif request.Start.Date <= DateTime.Today then
@@ -99,12 +95,7 @@ module Logic =
         | _ ->
             Error "Request cannot be validated"
 
-    let decide (store: IStore<UserId, RequestEvent>) (command: Command) =
-        let userId = command.UserId
-        let stream = store.GetStream userId
-        let events = stream.ReadAll()
-        let userRequests = getAllRequests events
-
+    let decide (userRequests: UserRequestsState) (command: Command) =
         match command with
         | RequestTimeOff request ->
             let activeUserRequests  =
