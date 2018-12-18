@@ -1,33 +1,12 @@
 ﻿namespace TimeOff
 
 open System
-open EventStorage
-
-// First, we define our domain
-type User =
-    | Employee of int
-    | Manager
-
-type HalfDay = | AM | PM
-
-type Boundary = {
-    Date: DateTime
-    HalfDay: HalfDay
-}
-
-type UserId = int
-
-type TimeOffRequest = {
-    UserId: UserId
-    RequestId: Guid
-    Start: Boundary
-    End: Boundary
-}
 
 // Then our commands
 type Command =
     | RequestTimeOff of TimeOffRequest
-    | ValidateRequest of UserId * Guid with
+    | ValidateRequest of UserId * Guid
+    with
     member this.UserId =
         match this with
         | RequestTimeOff request -> request.UserId
@@ -36,7 +15,8 @@ type Command =
 // And our events
 type RequestEvent =
     | RequestCreated of TimeOffRequest
-    | RequestValidated of TimeOffRequest with
+    | RequestValidated of TimeOffRequest
+    with
     member this.Request =
         match this with
         | RequestCreated request -> request
@@ -79,11 +59,10 @@ module Logic =
     let overlapsWithAnyRequest (otherRequests: TimeOffRequest seq) request =
         false //TODO: write this function using overlapsWith
 
-    let createRequest activeUserRequests  request =
+    let createRequest today activeUserRequests request =
         if request |> overlapsWithAnyRequest activeUserRequests then
             Error "Overlapping request"
-        // This DateTime.Today must go away!
-        elif request.Start.Date <= DateTime.Today then
+        elif request.Start.Date <= today then
             Error "The request starts in the past"
         else
             Ok [RequestCreated request]
@@ -95,18 +74,26 @@ module Logic =
         | _ ->
             Error "Request cannot be validated"
 
-    let decide (userRequests: UserRequestsState) (command: Command) =
-        match command with
-        | RequestTimeOff request ->
-            let activeUserRequests  =
-                userRequests
-                |> Map.toSeq
-                |> Seq.map (fun (_, state) -> state)
-                |> Seq.where (fun state -> state.IsActive)
-                |> Seq.map (fun state -> state.Request)
+    let decide (today: DateTime) (userRequests: UserRequestsState) (user: User) (command: Command) =
+        let relatedUserId = command.UserId
+        match user with
+        | Employee userId when userId <> relatedUserId ->
+            Error "Unauthorized"
+        | _ ->
+            match command with
+            | RequestTimeOff request ->
+                let activeUserRequests =
+                    userRequests
+                    |> Map.toSeq
+                    |> Seq.map (fun (_, state) -> state)
+                    |> Seq.where (fun state -> state.IsActive)
+                    |> Seq.map (fun state -> state.Request)
 
-            createRequest activeUserRequests  request
+                createRequest today activeUserRequests request
 
-        | ValidateRequest (_, requestId) ->
-            let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
-            validateRequest requestState
+            | ValidateRequest (_, requestId) ->
+                if user <> Manager then
+                    Error "Unauthorized"
+                else
+                    let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
+                    validateRequest requestState

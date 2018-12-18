@@ -19,6 +19,7 @@ x64/
 x86/
 bld/
 build/
+build-tests/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
@@ -242,11 +243,16 @@ FakesAssemblies/
 _Pvt_Extensions
 
 # Paket dependency manager
-.paket/paket.exe
 paket-files/
 
 # FAKE - F# Make
 .fake/
+
+# JWT temp token
+.jwt/
+
+# Filesystem-based persistence directory
+.storage/
 
 # JetBrains Rider
 .idea/
