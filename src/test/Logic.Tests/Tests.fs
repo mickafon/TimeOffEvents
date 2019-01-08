@@ -51,6 +51,65 @@ let overlapTests =
 
       Expect.isFalse (Logic.overlapsWith request1 request2) "The requests don't overlap"
     }
+    
+    test "Request don't overlap with list" {
+        let request = {
+           UserId = 1
+           RequestId = Guid.NewGuid()
+           Start = { Date = DateTime(2018, 10, 1); HalfDay = AM }
+           End = { Date = DateTime(2018, 10, 1); HalfDay = PM }
+        }
+     
+        let request1 = {
+            UserId = 1
+            RequestId = Guid.NewGuid()
+            Start = { Date = DateTime(2018, 10, 3); HalfDay = AM }
+            End = { Date = DateTime(2018, 10, 3); HalfDay = PM }
+        }
+      
+        let request2 = {
+            UserId = 1
+            RequestId = Guid.NewGuid()
+            Start = { Date = DateTime(2018, 10, 2); HalfDay = AM }
+            End = { Date = DateTime(2018, 10, 2); HalfDay = PM }
+        }
+        let requests = [request1;request2]
+
+        Expect.isFalse(Logic.overlapsWithAnyRequest requests request) "The request don't overlap with a request in the list"
+    }
+
+    test "Request overlap with list" {
+        let request = {
+           UserId = 1
+           RequestId = Guid.NewGuid()
+           Start = { Date = DateTime(2018, 10, 1); HalfDay = AM }
+           End = { Date = DateTime(2018, 10, 1); HalfDay = PM }
+        }
+     
+        let request1 = {
+            UserId = 1
+            RequestId = Guid.NewGuid()
+            Start = { Date = DateTime(2018, 10, 3); HalfDay = AM }
+            End = { Date = DateTime(2018, 10, 3); HalfDay = PM }
+        }
+
+        let request2 = {
+            UserId = 1
+            RequestId = Guid.NewGuid()
+            Start = { Date = DateTime(2018, 10, 2); HalfDay = AM }
+            End = { Date = DateTime(2018, 10, 2); HalfDay = PM }
+        }
+      
+        let request3 = {
+            UserId = 1
+            RequestId = Guid.NewGuid()
+            Start = { Date = DateTime(2018, 10, 1); HalfDay = AM }
+            End = { Date = DateTime(2018, 10, 1); HalfDay = PM }
+        }
+        let requests = [request1;request2;request3]
+
+        Expect.isTrue(Logic.overlapsWithAnyRequest requests request) "The request overlap with a request in the list"
+    }
   ]
 
 [<Tests>]
@@ -100,5 +159,23 @@ let validationTests =
       |> AndDateIs (2018, 12, 3)
       |> When (ValidateRequest (1, request.RequestId))
       |> Then (Ok [RequestValidated request]) "The request should have been validated"
+    }
+  ]
+
+[<Tests>]
+let cancelTests = 
+  testList "Cancel tests" [
+    test "A request is canceled" {
+      let request = {
+        UserId = 1
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2018, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2018, 12, 28); HalfDay = PM } }
+      
+      Given [ RequestCreated request ]
+      |> ConnectedAs Manager
+      |> AndDateIs (2018, 12, 3)
+      |> When (CancelRequest(1, request.RequestId))
+      |> Then (Ok [RequestCanceled request]) "The request should have been canceled"
     }
   ]
