@@ -5,12 +5,14 @@ open System
 // Then our commands
 type Command =
     | RequestTimeOff of TimeOffRequest
+    | ListRequests of UserId * Guid
     | ValidateRequest of UserId * Guid
     | CancelRequest of UserId * Guid
     with
     member this.UserId =
         match this with
         | RequestTimeOff request -> request.UserId
+        | ListRequests (userId, _) -> userId
         | ValidateRequest (userId, _) -> userId
         | CancelRequest (userId, _) -> userId
 
@@ -93,6 +95,10 @@ module Logic =
         else
             Ok [RequestCreated request]
 
+    //let listRequests userId =
+    //    match userId with
+    //    | 
+
     let validateRequest requestState =
         match requestState with
         | PendingValidation request ->
@@ -100,12 +106,15 @@ module Logic =
         | _ ->
             Error "Request cannot be validated"
 
-    let cancelRequest requestState =
-        match requestState with
-        | NotCreated ->
-            Error "Request cannot be canceled"
-        | _ ->
-            Ok [RequestCanceled requestState.Request]
+    let cancelRequest requestState request today =
+        if request.Start.Date <= today then
+            Error "Cannot cancel a request who starts in the past"
+        else
+            match requestState with
+            | NotCreated ->
+                Error "Request cannot be canceled"
+            | _ ->
+                Ok [RequestCanceled requestState.Request]
 
     let decide (today: DateTime) (userRequests: UserRequestsState) (user: User) (command: Command) =
         let relatedUserId = command.UserId
@@ -132,4 +141,4 @@ module Logic =
                     validateRequest requestState
             | CancelRequest (_, requestId) ->
                 let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
-                cancelRequest requestState
+                cancelRequest requestState requestId today

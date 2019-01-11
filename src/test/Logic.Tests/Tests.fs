@@ -169,13 +169,27 @@ let cancelTests =
       let request = {
         UserId = 1
         RequestId = Guid.NewGuid()
-        Start = { Date = DateTime(2018, 12, 28); HalfDay = AM }
-        End = { Date = DateTime(2018, 12, 28); HalfDay = PM } }
+        Start = { Date = DateTime(2019, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2019, 12, 28); HalfDay = PM } }
       
       Given [ RequestCreated request ]
       |> ConnectedAs Manager
-      |> AndDateIs (2018, 12, 3)
+      |> AndDateIs (2019, 01, 7)
       |> When (CancelRequest(1, request.RequestId))
       |> Then (Ok [RequestCanceled request]) "The request should have been canceled"
+    }
+
+    test "Cancel request with a passed date" {
+      let request = {
+        UserId = 1
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2018, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2018, 12, 28); HalfDay = PM } }
+
+    Given [ RequestCreated request ]
+      |> ConnectedAs (Employee 1)
+      |> AndDateIs (2019, 01, 7)
+      |> When (CancelRequest(1, request.RequestId))
+      |> Then (Ok [RequestCanceled request]) "The request should not have been canceled"
     }
   ]
