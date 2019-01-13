@@ -163,6 +163,24 @@ let validationTests =
   ]
 
 [<Tests>]
+let refuseTests =
+  testList "Refuse tests" [
+    test "A request is refused" {
+      let request = {
+        UserId = 1
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2018, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2018, 12, 28); HalfDay = PM } }
+
+      Given [ RequestCreated request ]
+      |> ConnectedAs Manager
+      |> AndDateIs (2018, 12, 3)
+      |> When (RefuseRequest (1, request.RequestId))
+      |> Then (Ok [RequestRefused request]) "The request should have been refused"
+    }
+  ]
+
+[<Tests>]
 let cancelTests = 
   testList "Cancel tests" [
     test "A request is canceled" {

@@ -6,24 +6,28 @@ open System
 type Command =
     | RequestTimeOff of TimeOffRequest
     | ValidateRequest of UserId * Guid
+    | RefuseRequest of UserId * Guid
     | CancelRequest of UserId * Guid
     with
     member this.UserId =
         match this with
         | RequestTimeOff request -> request.UserId
         | ValidateRequest (userId, _) -> userId
+        | RefuseRequest (userId, _) -> userId
         | CancelRequest (userId, _) -> userId
 
 // And our events
 type RequestEvent =
     | RequestCreated of TimeOffRequest
     | RequestValidated of TimeOffRequest
+    | RequestRefused of TimeOffRequest
     | RequestCanceled of TimeOffRequest
     with
     member this.Request =
         match this with
         | RequestCreated request -> request
         | RequestValidated request -> request
+        | RequestRefused request -> request
         | RequestCanceled request -> request
 
 // We then define the state of the system,
@@ -34,6 +38,7 @@ module Logic =
         | NotCreated
         | Canceled of TimeOffRequest
         | PendingValidation of TimeOffRequest
+        | Refused of TimeOffRequest
         | Validated of TimeOffRequest with
         member this.Request =
             match this with
@@ -41,12 +46,14 @@ module Logic =
             | PendingValidation request
             | Validated request -> request
             | Canceled request -> request
+            | Refused request -> request
         member this.IsActive =
             match this with
             | NotCreated -> false
             | PendingValidation _
             | Validated _ -> true
             | Canceled _ -> false
+            | Refused _ -> false
 
     type UserRequestsState = Map<Guid, RequestState>
 
@@ -55,6 +62,7 @@ module Logic =
         | RequestCreated request -> PendingValidation request
         | RequestValidated request -> Validated request
         | RequestCanceled request -> Canceled request
+        | RequestRefused request -> Refused request
 
     let evolveUserRequests (userRequests: UserRequestsState) (event: RequestEvent) =
         let requestState = defaultArg (Map.tryFind event.Request.RequestId userRequests) NotCreated
@@ -99,6 +107,13 @@ module Logic =
             Ok [RequestValidated request]
         | _ ->
             Error "Request cannot be validated"
+        
+    let refuseRequest requestState =
+        match requestState with
+        | PendingValidation request ->
+            Ok [RequestRefused request]
+        | _ ->
+            Error "Request cannot be refused"
 
     let cancelRequest requestState =
         match requestState with
@@ -130,6 +145,12 @@ module Logic =
                 else
                     let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
                     validateRequest requestState
+            | RefuseRequest (_, requestId) ->
+                if user <> Manager then
+                    Error "Unauthorized"
+                else
+                    let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
+                    refuseRequest requestState
             | CancelRequest (_, requestId) ->
                 let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
                 cancelRequest requestState
