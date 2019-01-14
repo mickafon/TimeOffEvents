@@ -183,7 +183,7 @@ let refuseTests =
 [<Tests>]
 let cancelTests = 
   testList "Cancel tests" [
-    test "A request is canceled" {
+    test "A request is canceled by manager" {
       let request = {
         UserId = 1
         RequestId = Guid.NewGuid()
@@ -193,7 +193,7 @@ let cancelTests =
       Given [ RequestCreated request ]
       |> ConnectedAs Manager
       |> AndDateIs (2018, 12, 3)
-      |> When (CancelRequest(1, request.RequestId))
-      |> Then (Ok [RequestCanceled request]) "The request should have been canceled"
+      |> When (CancelByManagerRequest(1, request.RequestId))
+      |> Then (Ok [RequestCanceledByManager request]) "The request should have been canceled"
     }
   ]
