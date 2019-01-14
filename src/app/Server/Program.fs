@@ -40,6 +40,18 @@ module HttpHandlers =
                     return! (BAD_REQUEST message) next ctx
             }
 
+    let summaryRequests (handleCommand: Command -> Result<RequestEvent list, string>) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let userAndRequestId = ctx.BindQueryString<UserAndRequestId>()
+                let command = SummaryRequests userAndRequestId.UserId
+                let result = handleCommand command
+                match result with
+                | Ok _ -> return! json userAndRequestId next ctx
+                | Error message ->
+                    return! (BAD_REQUEST message) next ctx
+            }
+
     let validateRequest (handleCommand: Command -> Result<RequestEvent list, string>) =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
@@ -96,6 +108,7 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
                     (Auth.Handlers.requiresJwtTokenForAPI (fun user ->
                         choose [
                             POST >=> route "/request" >=> HttpHandlers.requestTimeOff (handleCommand user)
+                            POST >=> route "/summary-requests" >=> HttpHandlers.summaryRequests (handleCommand user)
                             POST >=> route "/validate-request" >=> HttpHandlers.validateRequest (handleCommand user)
                             POST >=> route "/cancel-request" >=> HttpHandlers.cancelRequest (handleCommand user)
                         ]

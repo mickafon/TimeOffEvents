@@ -5,14 +5,14 @@ open System
 // Then our commands
 type Command =
     | RequestTimeOff of TimeOffRequest
-    | ListRequests of UserId * Guid
+    | SummaryRequests of UserId * Guid
     | ValidateRequest of UserId * Guid
     | CancelRequest of UserId * Guid
     with
     member this.UserId =
         match this with
         | RequestTimeOff request -> request.UserId
-        | ListRequests (userId, _) -> userId
+        | SummaryRequests (userId, _) -> userId
         | ValidateRequest (userId, _) -> userId
         | CancelRequest (userId, _) -> userId
 
@@ -95,9 +95,9 @@ module Logic =
         else
             Ok [RequestCreated request]
 
-    //let listRequests userId =
-    //    match userId with
-    //    | 
+    let summaryRequests userId =
+         // match userId with
+        UserId
 
     let validateRequest requestState =
         match requestState with
@@ -106,11 +106,8 @@ module Logic =
         | _ ->
             Error "Request cannot be validated"
 
-    let cancelRequest requestState request today =
-        if request.Start.Date <= today then
-            Error "Cannot cancel a request who starts in the past"
-        else
-            match requestState with
+    let cancelRequest requestState =
+        match requestState with
             | NotCreated ->
                 Error "Request cannot be canceled"
             | _ ->
@@ -139,6 +136,13 @@ module Logic =
                 else
                     let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
                     validateRequest requestState
+
             | CancelRequest (_, requestId) ->
                 let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
-                cancelRequest requestState requestId today
+                if user <> Manager && requestState.Request.Start.Date <= today then
+                    Error "Cannot cancel a request who starts in the past"
+                else
+                    cancelRequest requestState
+
+            | SummaryRequests (_, requestId) ->
+                summaryRequests requestId
