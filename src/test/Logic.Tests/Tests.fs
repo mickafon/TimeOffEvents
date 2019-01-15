@@ -163,9 +163,41 @@ let validationTests =
   ]
 
 [<Tests>]
-let cancelTests = 
+let refuseTests =
+  testList "Refuse tests" [
+    test "A request is refused" {
+      let request = {
+        UserId = 1
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2018, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2018, 12, 28); HalfDay = PM } }
+
+      Given [ RequestCreated request ]
+      |> ConnectedAs Manager
+      |> AndDateIs (2018, 12, 3)
+      |> When (ValidateRequest (1, request.RequestId))
+      |> Then (Ok [RequestValidated request]) "The request should have been refused"
+    }
+
+    test "A pending cancellation request is refused" {
+      let request = {
+        UserId = 1
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2018, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2018, 12, 28); HalfDay = PM } }
+
+      Given [ RequestCreated request ]
+      |> ConnectedAs Manager
+      |> AndDateIs (2018, 12, 3)
+      |> When (CancelRequest (1, request.RequestId))
+      |> Then (Ok [RequestCancellationRefused request]) "The pending cancellation request should have been refused"
+    }
+  ]
+
+[<Tests>]
+let cancellationTests = 
   testList "Cancel tests" [
-    test "A request is canceled" {
+    test "A request is canceled by manager" {
       let request = {
         UserId = 1
         RequestId = Guid.NewGuid()
@@ -176,7 +208,21 @@ let cancelTests =
       |> ConnectedAs Manager
       |> AndDateIs (2019, 01, 7)
       |> When (CancelRequest(1, request.RequestId))
-      |> Then (Ok [RequestCanceled request]) "The request should have been canceled"
+      |> Then (Ok [RequestCanceledByManager request]) "The request should have been canceled"
+    }
+
+    test "A request is canceled by employee" {
+      let request = {
+        UserId = 1
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2019, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2019, 12, 28); HalfDay = PM } }
+      
+      Given [ RequestCreated request ]
+      |> ConnectedAs (Employee 1)
+      |> AndDateIs (2019, 01, 7)
+      |> When (CancelRequest(1, request.RequestId))
+      |> Then (Ok [RequestCanceledByEmployee request]) "The request should have been canceled"
     }
 
     test "Cancel request with a passed date" {
@@ -190,6 +236,6 @@ let cancelTests =
       |> ConnectedAs (Employee 1)
       |> AndDateIs (2019, 01, 7)
       |> When (CancelRequest(1, request.RequestId))
-      |> Then (Ok [RequestCanceled request]) "The request should not have been canceled"
+      |> Then (Ok [RequestPendingCancellation request]) "The request should have been pending canceled"
     }
   ]
