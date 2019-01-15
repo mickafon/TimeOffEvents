@@ -8,6 +8,7 @@ type Command =
     | SummaryRequests of UserId * Guid
     | ValidateRequest of UserId * Guid
     | CancelRequest of UserId * Guid
+    | RefuseRequest of UserId * Guid
     with
     member this.UserId =
         match this with
@@ -15,18 +16,21 @@ type Command =
         | SummaryRequests (userId, _) -> userId
         | ValidateRequest (userId, _) -> userId
         | CancelRequest (userId, _) -> userId
+        | RefuseRequest (userId, _) -> userId
 
 // And our events
 type RequestEvent =
     | RequestCreated of TimeOffRequest
     | RequestValidated of TimeOffRequest
     | RequestCanceled of TimeOffRequest
+    | RequestRefused of TimeOffRequest
     with
     member this.Request =
         match this with
         | RequestCreated request -> request
         | RequestValidated request -> request
         | RequestCanceled request -> request
+        | RequestRefused request -> request
 
 // We then define the state of the system,
 // and our 2 main functions `decide` and `evolve`
@@ -34,7 +38,11 @@ module Logic =
 
     type RequestState =
         | NotCreated
-        | Canceled of TimeOffRequest
+        | PendingCancellation of TimeOffRequest
+        | CanceledByEmployee of TimeOffRequest
+        | CanceledByManager of TimeOffRequest
+        | CancellationRefused of TimeOffRequest
+        | Refused of TimeOffRequest
         | PendingValidation of TimeOffRequest
         | Validated of TimeOffRequest with
         member this.Request =
@@ -42,13 +50,21 @@ module Logic =
             | NotCreated -> invalidOp "Not created"
             | PendingValidation request
             | Validated request -> request
-            | Canceled request -> request
+            | PendingCancellation request
+            | CanceledByEmployee request -> request
+            | CanceledByManager request -> request
+            | CancellationRefused request -> request
+            | Refused request -> request
         member this.IsActive =
             match this with
             | NotCreated -> false
             | PendingValidation _
             | Validated _ -> true
-            | Canceled _ -> false
+            | PendingCancellation _
+            | CanceledByEmployee _ -> false
+            | CanceledByManager _ -> false
+            | CancellationRefused _ -> true
+            | Refused _ -> true
 
     type UserRequestsState = Map<Guid, RequestState>
 
@@ -145,4 +161,4 @@ module Logic =
                     cancelRequest requestState
 
             | SummaryRequests (_, requestId) ->
-                summaryRequests requestId
+                //summaryRequests requestId
