@@ -51,7 +51,7 @@ module Logic =
         | PendingValidation of TimeOffRequest
         | Validated of TimeOffRequest
         | Refused of TimeOffRequest
-        | PendingValidationForCancellation of TimeOffRequest
+        | PendingCancellation of TimeOffRequest
         | CancellationRefused of TimeOffRequest
         | CanceledByEmployee of TimeOffRequest
         | CanceledByManager of TimeOffRequest with
@@ -61,7 +61,7 @@ module Logic =
             | PendingValidation request
             | Validated request -> request
             | Refused request -> request
-            | PendingValidationForCancellation request -> request
+            | PendingCancellation request -> request
             | CancellationRefused request -> request
             | CanceledByEmployee request -> request
             | CanceledByManager request -> request
@@ -71,7 +71,7 @@ module Logic =
             | PendingValidation _
             | Validated _ -> true
             | Refused _ -> false
-            | PendingValidationForCancellation _ -> true
+            | PendingCancellation _ -> true
             | CancellationRefused _ -> true
             | CanceledByEmployee _ -> false
             | CanceledByManager _ -> false
@@ -83,7 +83,7 @@ module Logic =
         | RequestCreated request -> PendingValidation request
         | RequestValidated request -> Validated request
         | RequestRefused request -> Refused request
-        | RequestForCancellationCreated request -> PendingValidationForCancellation request
+        | RequestForCancellationCreated request -> PendingCancellation request
         | RequestForCancellationRefused request -> CancellationRefused request
         | RequestCanceledByEmployee request -> CanceledByEmployee request
         | RequestCanceledByManager request -> CanceledByManager request
@@ -152,7 +152,7 @@ module Logic =
 
     let refuseCancellationRequest requestState =
         match requestState with
-            | PendingValidationForCancellation request ->
+            | PendingCancellation request ->
                 Ok [RequestForCancellationRefused request]
             | _ ->
                 Error "Request for cancellation cannot be refused"
@@ -170,7 +170,7 @@ module Logic =
                 Ok [RequestCanceledByManager request]
             | Validated request ->
                 Ok [RequestCanceledByManager request]
-            | PendingValidationForCancellation request ->
+            | PendingCancellation request ->
                 Ok [RequestCanceledByManager request]
             | _ ->
                 Error "Request cannot be canceled (by manager)"
