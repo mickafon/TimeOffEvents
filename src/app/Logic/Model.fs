@@ -148,10 +148,18 @@ module Logic =
 
     let cancelRequestByEmployee requestState today =
         match requestState with
-            | PendingCancellation request ->
-                Ok [RequestPendingCancellation requestState.Request]
+            | PendingValidation request ->
+                if request.Start.Date > today then
+                    Ok [RequestCanceledByEmployee requestState.Request]
+                else
+                    Ok [RequestPendingCancellation requestState.Request]
+            | Validated request ->
+                if request.Start.Date > today then
+                    Ok [RequestCanceledByEmployee requestState.Request]
+                else
+                    Ok [RequestPendingCancellation requestState.Request]
             | _ ->
-                Error "Request cannot be refused"             
+                Error "Request cannot be canceled"             
 
     let cancelRequestByManager requestState =
         match requestState with
