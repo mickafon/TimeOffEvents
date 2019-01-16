@@ -10,6 +10,7 @@ type Command =
     | CancelRequest of UserId * Guid
     | RefuseRequest of UserId * Guid
     | RefuseCancellationRequest of UserId * Guid
+    | BalanceRequest of UserId
     with
     member this.UserId =
         match this with
@@ -19,6 +20,7 @@ type Command =
         | CancelRequest (userId, _) -> userId
         | RefuseRequest (userId, _) -> userId
         | RefuseCancellationRequest (userId, _) -> userId
+        | BalanceRequest (userId) -> userId
 
 // And our events
 type RequestEvent =
@@ -29,6 +31,7 @@ type RequestEvent =
     | RequestPendingCancellation of TimeOffRequest
     | RequestCancellationRefused of TimeOffRequest
     | RequestRefused of TimeOffRequest
+    | RequestBalance of TimeOffBalance
     with
     member this.Request =
         match this with
@@ -39,6 +42,11 @@ type RequestEvent =
         | RequestPendingCancellation request -> request
         | RequestRefused request -> request
         | RequestCancellationRefused request -> request
+        | RequestBalance _ -> invalidOp "balance"
+    member this.Balance =
+        match this with
+        | RequestBalance balance -> balance
+        | _ -> invalidOp "request"
 
 // We then define the state of the system,
 // and our 2 main functions `decide` and `evolve`
@@ -83,6 +91,7 @@ module Logic =
         | RequestCanceledByEmployee request -> CanceledByEmployee request
         | RequestCanceledByManager request -> CanceledByManager request
         | RequestPendingCancellation request -> PendingCancellation request
+        | RequestBalance _ -> invalidOp "Balance"
 
     let evolveUserRequests (userRequests: UserRequestsState) (event: RequestEvent) =
         let requestState = defaultArg (Map.tryFind event.Request.RequestId userRequests) NotCreated
@@ -155,10 +164,55 @@ module Logic =
                     | _ ->
                         Error "Request cannot be canceled by manager"
 
+    let computeTimeOff userRequests =
+        let time = userRequests.End.Date - userRequests.Start.Date
+        let mutable result = time.TotalDays + 1.0
+        if userRequests.End.HalfDay.Equals AM then do
+            result <- result - 0.5
+        if userRequests.Start.HalfDay.Equals PM then do
+            result <- result - 0.5
+        result
+
+
+    let getBalance (today: DateTime) activeUserRequests userId (userEnteredDate: DateTime)  =
+        
+        let earnedThisYear = (25.0 / 12.0) * float (today.Month - 1) 
+
+        let enteredDate = userEnteredDate
+        let mutable counter = enteredDate.Year
+        let mutable report = 0.
+        
+        while counter < (today.Year) do
+            let oldBalance = 
+                Seq.sumBy computeTimeOff (activeUserRequests
+                |> Seq.where (fun (request) -> request.Start.Date.Year.Equals(today.Year) && request.Start.Date <= today))
+            report <- report + (25. - oldBalance)
+            counter <- counter + 1
+
+        let taken = 
+            Seq.sumBy computeTimeOff (activeUserRequests
+            |> Seq.where (fun (request) -> request.Start.Date.Year.Equals(today.Year) && request.Start.Date <= today))
+
+        let planned = 
+            Seq.sumBy computeTimeOff (activeUserRequests
+            |> Seq.where (fun (request) -> request.Start.Date.Year.Equals(today.Year) && request.Start.Date > today))
+
+        {
+            UserId = userId
+            EarnedThisYear = earnedThisYear
+            Report = report
+            Taken = taken
+            Planned = planned
+            Balance = earnedThisYear + report - (taken + planned)
+        }
+        
+        
+
+                   
     let decide (today: DateTime) (userRequests: UserRequestsState) (user: User) (command: Command) =
-        let relatedUserId = command.UserId
+        let relatedUserId = command.UserId                   
         match user with
-        | Employee userId when userId <> relatedUserId ->
+        | Employee userInfo when userInfo.UserId <> relatedUserId ->
             Error "Unauthorized"
         | _ ->
             match command with
@@ -200,6 +254,19 @@ module Logic =
                 else
                     let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
                     refuseCancellation requestState
+            | BalanceRequest (userId) ->
+                match user with 
+                    | Employee userInfo ->
+                        let activeUserRequests =
+                            userRequests
+                            |> Map.toSeq
+                            |> Seq.map (fun (_, state) -> state)
+                            |> Seq.where (fun state -> state.IsActive)
+                            |> Seq.map (fun state -> state.Request)
 
+                        let balance = getBalance today activeUserRequests userInfo.UserId userInfo.EnteredDate
+                        Ok [RequestBalance balance]
+                    | _ ->
+                        Error "Unauthorized"
             //| HistoryRequests (_, requestId) ->
                 //summaryRequests requestId

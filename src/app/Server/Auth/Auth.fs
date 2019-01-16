@@ -17,12 +17,27 @@ type Identity =
 module Handlers =
 
     let private tryGetValidIdentityFromLogin (login: TimeOff.AuthTypes.Login) : Identity option =
+        let userInfo1 = {
+            UserId = 1 
+            EnteredDate = System.DateTime(2016, 06, 15)
+        }
+
+        let userInfo2 = {
+            UserId = 2
+            EnteredDate = System.DateTime(2016, 03, 15)
+        }
+        
+        let userInfo3 = {
+            UserId = 3
+            EnteredDate = System.DateTime(2016, 07, 15)
+        }
+
         if login.Password = login.UserName then
             match login.UserName with
             | "manager"   -> Some { UserName = login.UserName; User = Manager }
-            | "employee1" -> Some { UserName = login.UserName; User = Employee 1 }
-            | "employee2" -> Some { UserName = login.UserName; User = Employee 2 }
-            | "employee3" -> Some { UserName = login.UserName; User = Employee 3 }
+            | "employee1" -> Some { UserName = login.UserName; User = Employee userInfo1 }
+            | "employee2" -> Some { UserName = login.UserName; User = Employee userInfo2 }
+            | "employee3" -> Some { UserName = login.UserName; User = Employee userInfo3 }
             | _ -> None
         else
             None
