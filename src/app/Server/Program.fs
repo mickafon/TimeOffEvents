@@ -40,17 +40,18 @@ module HttpHandlers =
                     return! (BAD_REQUEST message) next ctx
             }
 
-    //let historyRequests (handleCommand: Command -> Result<RequestEvent list, string>) =
-    //    fun (next: HttpFunc) (ctx: HttpContext) ->
-    //        task {
-    //            let userAndRequestId = ctx.BindQueryString<UserAndRequestId>()
-    //            let command = HistoryRequests userAndRequestId.UserId
-    //            let result = handleCommand command
-    //            match result with
-    //            | Ok _ -> return! json userAndRequestId next ctx
-    //            | Error message ->
-    //                return! (BAD_REQUEST message) next ctx
-    //        }
+    let balanceRequest (handleCommand: Command -> Result<RequestEvent list, string>) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let userAndRequestId = ctx.BindQueryString<UserAndRequestId>()
+                let command = BalanceRequest userAndRequestId.UserId
+                let result = handleCommand command
+                match result with
+                | Ok [RequestBalance timeOffRequest] -> return! json timeOffRequest next ctx
+                | Ok _ -> return! Successful.NO_CONTENT next ctx
+                | Error message ->
+                    return! (BAD_REQUEST message) next ctx
+            }
 
     let validateRequest (handleCommand: Command -> Result<RequestEvent list, string>) =
         fun (next: HttpFunc) (ctx: HttpContext) ->
@@ -134,8 +135,8 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
                 subRoute "/timeoff"
                     (Auth.Handlers.requiresJwtTokenForAPI (fun user ->
                         choose [
+                            GET >=> route "/balance" >=> HttpHandlers.balanceRequest (handleCommand user)
                             POST >=> route "/request" >=> HttpHandlers.requestTimeOff (handleCommand user)
-                            //POST >=> route "/history-requests" >=> HttpHandlers.historyRequests (handleCommand user)
                             POST >=> route "/validate-request" >=> HttpHandlers.validateRequest (handleCommand user)
                             POST >=> route "/cancel-request" >=> HttpHandlers.cancelRequest (handleCommand user)
                             POST >=> route "/refuse-request" >=> HttpHandlers.refuseRequest (handleCommand user)
