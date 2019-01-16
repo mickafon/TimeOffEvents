@@ -121,9 +121,14 @@ let creationTests =
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2018, 12, 28); HalfDay = AM }
         End = { Date = DateTime(2018, 12, 28); HalfDay = PM } }
+        
+      let userInfo = {
+        UserId = 1 
+        EnteredDate = DateTime(2016, 06, 15)
+      }
 
       Given [ ]
-      |> ConnectedAs (Employee 1)
+      |> ConnectedAs (Employee userInfo)
       |> AndDateIs (2018, 12, 3)
       |> When (RequestTimeOff request)
       |> Then (Ok [RequestCreated request]) "The request should have been created"
@@ -136,8 +141,13 @@ let creationTests =
         Start = { Date = DateTime(2018, 11, 28); HalfDay = AM }
         End = { Date = DateTime(2018, 11, 28); HalfDay = PM } }
 
+      let userInfo = {
+        UserId = 1 
+        EnteredDate = DateTime(2016, 06, 15)
+      }
+
       Given [ ]
-      |> ConnectedAs (Employee 1)
+      |> ConnectedAs (Employee userInfo)
       |> AndDateIs (2018, 12, 3)
       |> When (RequestTimeOff request)
       |> Then (Error "The request starts in the past") "The request should not have been created"
@@ -217,9 +227,14 @@ let cancellationTests =
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2019, 12, 28); HalfDay = AM }
         End = { Date = DateTime(2019, 12, 28); HalfDay = PM } }
+      
+      let userInfo = {
+        UserId = 1 
+        EnteredDate = DateTime(2016, 06, 15)
+      }
 
       Given [ RequestCreated request ]
-      |> ConnectedAs (Employee 1)
+      |> ConnectedAs (Employee userInfo)
       |> AndDateIs (2019, 01, 7)
       |> When (CancelRequest(1, request.RequestId))
       |> Then (Ok [RequestCanceledByEmployee request]) "The request should have been canceled"
@@ -232,8 +247,13 @@ let cancellationTests =
         Start = { Date = DateTime(2018, 12, 28); HalfDay = AM }
         End = { Date = DateTime(2018, 12, 28); HalfDay = PM } }
 
-    Given [ RequestCreated request ]
-      |> ConnectedAs (Employee 1)
+      let userInfo = {
+        UserId = 1 
+        EnteredDate = DateTime(2016, 06, 15)
+      }
+
+      Given [ RequestCreated request ]
+      |> ConnectedAs (Employee userInfo)
       |> AndDateIs (2019, 01, 7)
       |> When (CancelRequest(1, request.RequestId))
       |> Then (Ok [RequestPendingCancellation request]) "The request should have been pending canceled"
