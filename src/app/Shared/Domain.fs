@@ -5,8 +5,13 @@ open System
 // First, we define our domain
 type UserId = int
 
+type UserInfo = {
+    UserId: UserId
+    EnteredDate: DateTime
+}
+
 type User =
-    | Employee of UserId
+    | Employee of UserInfo
     | Manager
 
 type HalfDay = | AM | PM
@@ -23,4 +28,13 @@ type TimeOffRequest = {
     RequestId: Guid
     Start: Boundary
     End: Boundary
+}
+
+type TimeOffBalance = {
+    UserId: UserId
+    EarnedThisYear: float
+    Report: float
+    Taken: float
+    Planned: float
+    Balance: float
 }
