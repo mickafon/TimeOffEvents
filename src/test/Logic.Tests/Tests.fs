@@ -186,10 +186,10 @@ let refuseTests =
         Start = { Date = DateTime(2018, 12, 28); HalfDay = AM }
         End = { Date = DateTime(2018, 12, 28); HalfDay = PM } }
 
-      Given [ RequestCreated request ]
+      Given [ RequestPendingCancellation request ]
       |> ConnectedAs Manager
       |> AndDateIs (2018, 12, 3)
-      |> When (CancelRequest (1, request.RequestId))
+      |> When (RefuseCancellationRequest (1, request.RequestId))
       |> Then (Ok [RequestCancellationRefused request]) "The pending cancellation request should have been refused"
     }
   ]

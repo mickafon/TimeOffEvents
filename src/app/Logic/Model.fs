@@ -46,11 +46,6 @@ module Logic =
 
     type RequestState =
         | NotCreated
-        | PendingCancellation of TimeOffRequest
-        | CanceledByEmployee of TimeOffRequest
-        | CanceledByManager of TimeOffRequest
-        | CancellationRefused of TimeOffRequest
-        | Refused of TimeOffRequest
         | PendingValidation of TimeOffRequest
         | Validated of TimeOffRequest
         | Refused of TimeOffRequest
@@ -164,14 +159,18 @@ module Logic =
                 else
                     Ok [RequestPendingCancellation requestState.Request]
             | _ ->
-                Error "Request cannot be canceled"
+                Error "Request cannot be canceled by employee"
 
     let cancelRequestByManager requestState =
         match requestState with
             | NotCreated ->
-                Error "Request cannot be canceled"
+                Error "Request cannot be canceled by manager"
             | _ ->
-                Ok [RequestCanceledByManager requestState.Request]
+                match requestState.IsActive with
+                    | true ->
+                        Ok [RequestCanceledByManager requestState.Request]
+                    | _ ->
+                        Error "Request cannot be canceled by manager"
 
     let decide (today: DateTime) (userRequests: UserRequestsState) (user: User) (command: Command) =
         let relatedUserId = command.UserId
