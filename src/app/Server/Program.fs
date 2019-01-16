@@ -72,9 +72,8 @@ module HttpHandlers =
                 let command = CancelRequest (userAndRequestId.UserId, userAndRequestId.RequestId)
                 let result = handleCommand command
                 match result with
-                | Ok [RequestCanceledByEmployee timeOffRequest] -> return! json timeOffRequest next ctx
-                | Ok [RequestCanceledByManager timeOffRequest] -> return! json timeOffRequest next ctx
-                | Ok [RequestPendingCancellation timeOffRequest] -> return! json timeOffRequest next ctx
+                | Ok [RequestCanceledByEmployee timeOffRequest] | Ok [RequestCanceledByManager timeOffRequest] | Ok [RequestPendingCancellation timeOffRequest] -> 
+                    return! json timeOffRequest next ctx
                 | Ok _ -> return! Successful.NO_CONTENT next ctx
                 | Error message ->
                     return! (BAD_REQUEST message) next ctx

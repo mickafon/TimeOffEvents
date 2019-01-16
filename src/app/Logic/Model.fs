@@ -98,20 +98,8 @@ module Logic =
             true //TODO: write a function that checks if 2 requests overlap
 
     let overlapsWithAnyRequest (otherRequests: TimeOffRequest seq) request =
-        if Seq.isEmpty otherRequests then
-            false
-        else
-            let rec check requests =
-                if overlapsWith (requests |> Seq.head) request then
-                    true
-                elif Seq.isEmpty (requests |> Seq.tail) then
-                    false
-                else
-                    check (requests |> Seq.tail)
-            if check otherRequests then
-                true
-            else
-                false //TODO: write this function using overlapsWith
+        Seq.exists (fun element -> overlapsWith element request) otherRequests
+        //TODO: write this function using overlapsWith
 
     let createRequest today activeUserRequests request =
         if request |> overlapsWithAnyRequest activeUserRequests then
@@ -148,12 +136,7 @@ module Logic =
 
     let cancelRequestByEmployee requestState today =
         match requestState with
-            | PendingValidation request ->
-                if request.Start.Date > today then
-                    Ok [RequestCanceledByEmployee requestState.Request]
-                else
-                    Ok [RequestPendingCancellation requestState.Request]
-            | Validated request ->
+            | PendingValidation request | Validated request ->
                 if request.Start.Date > today then
                     Ok [RequestCanceledByEmployee requestState.Request]
                 else
