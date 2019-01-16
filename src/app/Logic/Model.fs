@@ -5,7 +5,6 @@ open System
 // Then our commands
 type Command =
     | RequestTimeOff of TimeOffRequest
-    | SummaryRequests of UserId * Guid
     | ValidateRequest of UserId * Guid
     | CancelRequest of UserId * Guid
     | RefuseRequest of UserId * Guid
@@ -15,7 +14,6 @@ type Command =
     member this.UserId =
         match this with
         | RequestTimeOff request -> request.UserId
-        | SummaryRequests (userId, _) -> userId
         | ValidateRequest (userId, _) -> userId
         | CancelRequest (userId, _) -> userId
         | RefuseRequest (userId, _) -> userId
@@ -107,20 +105,8 @@ module Logic =
             true //TODO: write a function that checks if 2 requests overlap
 
     let overlapsWithAnyRequest (otherRequests: TimeOffRequest seq) request =
-        if Seq.isEmpty otherRequests then
-            false
-        else
-            let rec check requests =
-                if overlapsWith (requests |> Seq.head) request then
-                    true
-                elif Seq.isEmpty (requests |> Seq.tail) then
-                    false
-                else
-                    check (requests |> Seq.tail)
-            if check otherRequests then
-                true
-            else
-                false //TODO: write this function using overlapsWith
+        Seq.exists (fun element -> overlapsWith element request) otherRequests
+        //TODO: write this function using overlapsWith
 
     let createRequest today activeUserRequests request =
         if request |> overlapsWithAnyRequest activeUserRequests then
@@ -129,10 +115,6 @@ module Logic =
             Error "The request starts in the past"
         else
             Ok [RequestCreated request]
-
-    //let historyRequests userId =
-         // match userId with
-    //    UserId
 
     let validateRequest requestState =
         match requestState with
@@ -157,29 +139,24 @@ module Logic =
 
     let cancelRequestByEmployee requestState today =
         match requestState with
-            | PendingValidation request ->
-                if request.Start.Date > today then
-                    Ok [RequestCanceledByEmployee requestState.Request]
-                else
-                    Ok [RequestPendingCancellation requestState.Request]
-            | Validated request ->
-                if request.Start.Date > today then
-                    Ok [RequestCanceledByEmployee requestState.Request]
-                else
-                    Ok [RequestPendingCancellation requestState.Request]
-            | _ ->
-                Error "Request cannot be canceled by employee"
+        | PendingValidation request | Validated request ->
+            if request.Start.Date > today then
+                Ok [RequestCanceledByEmployee requestState.Request]
+            else
+                Ok [RequestPendingCancellation requestState.Request]
+        | _ ->
+            Error "Request cannot be canceled by employee"
 
     let cancelRequestByManager requestState =
         match requestState with
-            | NotCreated ->
-                Error "Request cannot be canceled by manager"
+        | NotCreated ->
+            Error "Request cannot be canceled by manager"
+        | _ ->
+            match requestState.IsActive with
+            | true ->
+                Ok [RequestCanceledByManager requestState.Request]
             | _ ->
-                match requestState.IsActive with
-                    | true ->
-                        Ok [RequestCanceledByManager requestState.Request]
-                    | _ ->
-                        Error "Request cannot be canceled by manager"
+                Error "Request cannot be canceled by manager"
 
     let computeTimeOff userRequests =
         let time = userRequests.End.Date - userRequests.Start.Date
@@ -222,15 +199,12 @@ module Logic =
             Planned = planned
             Balance = earnedThisYear + report - (taken + planned)
         }
-        
-        
-
                    
     let decide (today: DateTime) (userRequests: UserRequestsState) (user: User) (command: Command) =
         let relatedUserId = command.UserId                   
         match user with
         | Employee userInfo when userInfo.UserId <> relatedUserId ->
-            Error "Unauthorized"
+            Error "Unauthorizeed"
         | _ ->
             match command with
             | RequestTimeOff request ->
@@ -271,19 +245,18 @@ module Logic =
                 else
                     let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
                     refuseCancellation requestState
+
             | BalanceRequest (userId) ->
                 match user with 
-                    | Employee userInfo ->
-                        let activeUserRequests =
-                            userRequests
-                            |> Map.toSeq
-                            |> Seq.map (fun (_, state) -> state)
-                            |> Seq.where (fun state -> state.IsActive)
-                            |> Seq.map (fun state -> state.Request)
+                | Employee userInfo ->
+                    let activeUserRequests =
+                        userRequests
+                        |> Map.toSeq
+                        |> Seq.map (fun (_, state) -> state)
+                        |> Seq.where (fun state -> state.IsActive)
+                        |> Seq.map (fun state -> state.Request)
 
-                        let balance = getBalance today activeUserRequests userInfo.UserId userInfo.EnteredDate
-                        Ok [RequestBalance balance]
-                    | _ ->
-                        Error "Unauthorized"
-            //| HistoryRequests (_, requestId) ->
-                //summaryRequests requestId
+                    let balance = getBalance today activeUserRequests userInfo.UserId userInfo.EnteredDate
+                    Ok [RequestBalance balance]
+                | _ ->
+                    Error "Unauthorizaed"
