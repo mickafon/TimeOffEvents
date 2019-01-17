@@ -167,6 +167,9 @@ module Logic =
             result <- result - 0.5
         result
 
+    let monthPresence (userEnteredDate: DateTime) (today: DateTime) (year: int) =        
+        let nbMonth = if userEnteredDate.Year.Equals(year) then 12 - (userEnteredDate.Month-1) else 12                           
+        nbMonth
 
     let getBalance (today: DateTime) activeUserRequests userId (userEnteredDate: DateTime)  =
         
@@ -179,8 +182,9 @@ module Logic =
         while counter < (today.Year) do
             let oldBalance = 
                 Seq.sumBy computeTimeOff (activeUserRequests
-                |> Seq.where (fun (request) -> request.Start.Date.Year.Equals(today.Year) && request.Start.Date <= today))
-            report <- report + (25. - oldBalance)
+                |> Seq.where (fun (request) -> request.Start.Date.Year.Equals(counter)))
+            let oldEarned = (25.0 / 12.0) * float (monthPresence userEnteredDate today counter)
+            report <- report + (oldEarned - oldBalance)
             counter <- counter + 1
 
         let taken = 

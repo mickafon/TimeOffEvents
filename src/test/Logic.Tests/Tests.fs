@@ -259,3 +259,46 @@ let cancellationTests =
       |> Then (Ok [RequestPendingCancellation request]) "The request should have been pending canceled"
     }
   ]
+
+[<Tests>]
+let balanceTests =
+  testList "Balance tests" [
+    test "One future validated request and one past taken" {
+      let userInfo : UserInfo = {
+        UserId = 1
+        EnteredDate = DateTime(2018, 01, 01)
+      }
+
+      let pastRequest = {
+        UserId = 1
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2018, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2018, 12, 28); HalfDay = PM } 
+      }
+
+      let futurRequest = {
+        UserId = 1
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2019, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2019, 12, 28); HalfDay = PM } 
+      }
+
+      let balance: TimeOffBalance = {
+        UserId = 1
+        EarnedThisYear = 0.
+        Report = 24.
+        Taken = 0.
+        Planned = 1.
+        Balance = 23.
+      }
+
+      Given [ 
+        RequestValidated pastRequest 
+        RequestValidated futurRequest 
+      ]
+      |> ConnectedAs (Employee userInfo)
+      |> AndDateIs (2019, 01, 7)
+      |> When (BalanceRequest (1))
+      |> Then (Ok [RequestBalance balance]) "The request balance should be equals"
+    }
+  ]
