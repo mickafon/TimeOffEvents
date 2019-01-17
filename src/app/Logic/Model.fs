@@ -5,6 +5,7 @@ open System
 // Then our commands
 type Command =
     | RequestTimeOff of TimeOffRequest
+<<<<<<< HEAD
     | ValidateRequest of UserId * Guid
     | CancelRequest of UserId * Guid
     | RefuseRequest of UserId * Guid
@@ -12,6 +13,10 @@ type Command =
     | BalanceRequest of UserId
     with
     member this.UserId =
+=======
+    | ValidateRequest of UserId * Guid with
+    member this.UserId : UserId =
+>>>>>>> upstream/add-gui
         match this with
         | RequestTimeOff request -> request.UserId
         | ValidateRequest (userId, _) -> userId
@@ -23,6 +28,7 @@ type Command =
 // And our events
 type RequestEvent =
     | RequestCreated of TimeOffRequest
+<<<<<<< HEAD
     | RequestValidated of TimeOffRequest
     | RequestCanceledByEmployee of TimeOffRequest
     | RequestCanceledByManager of TimeOffRequest
@@ -32,6 +38,10 @@ type RequestEvent =
     | RequestBalance of TimeOffBalance
     with
     member this.Request =
+=======
+    | RequestValidated of TimeOffRequest with
+    member this.Request : TimeOffRequest =
+>>>>>>> upstream/add-gui
         match this with
         | RequestCreated request -> request
         | RequestValidated request -> request
@@ -97,12 +107,16 @@ module Logic =
         userRequests.Add (event.Request.RequestId, newRequestState)
 
     let overlapsWith request1 request2 =
+<<<<<<< HEAD
         if request1.End.Date < request2.Start.Date || request2.End.Date < request1.Start.Date then
             false
         elif request1.End.Date = request2.Start.Date && request1.End.HalfDay = AM && request2.Start.HalfDay = PM then
             false
         else
             true //TODO: write a function that checks if 2 requests overlap
+=======
+        request1.Start = request2.Start || request1.End = request2.End
+>>>>>>> upstream/add-gui
 
     let overlapsWithAnyRequest (otherRequests: TimeOffRequest seq) request =
         Seq.exists (fun element -> overlapsWith element request) otherRequests

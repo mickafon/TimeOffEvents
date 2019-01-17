@@ -35,9 +35,17 @@ module Handlers =
         if login.Password = login.UserName then
             match login.UserName with
             | "manager"   -> Some { UserName = login.UserName; User = Manager }
+<<<<<<< HEAD
             | "employee1" -> Some { UserName = login.UserName; User = Employee userInfo1 }
             | "employee2" -> Some { UserName = login.UserName; User = Employee userInfo2 }
             | "employee3" -> Some { UserName = login.UserName; User = Employee userInfo3 }
+=======
+            | "employee1" -> Some { UserName = login.UserName; User = Employee login.UserName }
+            | "employee2" -> Some { UserName = login.UserName; User = Employee login.UserName }
+            | "employee3" -> Some { UserName = login.UserName; User = Employee login.UserName }
+            | "employee4" -> Some { UserName = login.UserName; User = Employee login.UserName }
+            | "employee5" -> Some { UserName = login.UserName; User = Employee login.UserName }
+>>>>>>> upstream/add-gui
             | _ -> None
         else
             None
