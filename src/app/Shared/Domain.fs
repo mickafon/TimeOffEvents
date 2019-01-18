@@ -3,7 +3,7 @@
 open System
 
 // First, we define our domain
-type UserId = string
+type UserId = int
 
 type UserInfo = {
     UserId: UserId

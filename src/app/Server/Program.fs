@@ -148,24 +148,21 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
     choose [
         subRoute "/api"
             (choose [
-                route "/users/login/" >=> POST >=> Auth.Handlers.login
+                route "/users/login" >=> POST >=> Auth.Handlers.login
                 subRoute "/timeoff"
                     (Auth.Handlers.requiresJwtTokenForAPI (fun user ->
                         choose [
-                            POST >=>
-                                (choose [                        
-                                    routex "/request/?" >=> HttpHandlers.requestTimeOff (handleCommand user)
-                                    routex "/validate-request/?" >=> HttpHandlers.validateRequest (handleCommand user)
-                                    routex "/cancel-request/?" >=> HttpHandlers.cancelRequest (handleCommand user)
-                                    routex "/refuse-request/?" >=> HttpHandlers.refuseRequest (handleCommand user)
-                                    routex "/refuse-cancellation-request/?" >=> HttpHandlers.refuseCancellationRequest (handleCommand user)
-                                ])
-                            GET >=> routef "/balance/%s" >=> HttpHandlers.balanceRequest (handleCommand user)
-                            GET >=> routef "/history/%s" >=> HttpHandlers.historyRequest (handleCommand user)
+                            GET >=> route "/balance" >=> HttpHandlers.balanceRequest (handleCommand user)
+                            GET >=> route "/history" >=> HttpHandlers.historyRequest (handleCommand user)
+                            POST >=> route "/request" >=> HttpHandlers.requestTimeOff (handleCommand user)
+                            POST >=> route "/validate-request" >=> HttpHandlers.validateRequest (handleCommand user)
+                            POST >=> route "/cancel-request" >=> HttpHandlers.cancelRequest (handleCommand user)
+                            POST >=> route "/refuse-request" >=> HttpHandlers.refuseRequest (handleCommand user)
+                            POST >=> route "/refuse-cancellation-request" >=> HttpHandlers.refuseCancellationRequest (handleCommand user)
                         ]
                     ))
             ])
-        RequestErrors.NOT_FOUND "Not found" ]
+        setStatusCode 404 >=> text "Not Found" ]
 
 // ---------------------------------
 // Error handler
