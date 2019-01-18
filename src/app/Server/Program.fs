@@ -47,7 +47,20 @@ module HttpHandlers =
                 let command = BalanceRequest userAndRequestId.UserId
                 let result = handleCommand command
                 match result with
-                | Ok [RequestBalance timeOffRequest] -> return! json timeOffRequest next ctx
+                | Ok [RequestBalance balance] -> return! json balance next ctx
+                | Ok _ -> return! Successful.NO_CONTENT next ctx
+                | Error message ->
+                    return! (BAD_REQUEST message) next ctx
+            }
+
+    let historyRequest (handleCommand: Command -> Result<RequestEvent list, string>) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let userAndRequestId = ctx.BindQueryString<UserAndRequestId>()
+                let command = HistoryRequest userAndRequestId.UserId
+                let result = handleCommand command
+                match result with
+                | Ok [RequestHistory history] -> return! json history next ctx
                 | Ok _ -> return! Successful.NO_CONTENT next ctx
                 | Error message ->
                     return! (BAD_REQUEST message) next ctx
@@ -116,10 +129,11 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
 
         let eventStream = eventStore.GetStream(userId)
         let state = eventStream.ReadAll() |> Seq.fold Logic.evolveUserRequests Map.empty
+        let history = eventStream.ReadAll() |> Seq.fold Logic.getAllUserRequests List.Empty
         let today = DateTime.Today
 
         // Decide how to handle the command
-        let result = Logic.decide today state user command
+        let result = Logic.decide today state history user command
 
         // Save events in case of success
         match result with
@@ -136,6 +150,7 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
                     (Auth.Handlers.requiresJwtTokenForAPI (fun user ->
                         choose [
                             GET >=> route "/balance" >=> HttpHandlers.balanceRequest (handleCommand user)
+                            GET >=> route "/history" >=> HttpHandlers.historyRequest (handleCommand user)
                             POST >=> route "/request" >=> HttpHandlers.requestTimeOff (handleCommand user)
                             POST >=> route "/validate-request" >=> HttpHandlers.validateRequest (handleCommand user)
                             POST >=> route "/cancel-request" >=> HttpHandlers.cancelRequest (handleCommand user)

@@ -7,15 +7,22 @@ let Given (events: RequestEvent list) = events
 let ConnectedAs (user: User) (events: RequestEvent list) = events, user
 let AndDateIs (year, month, day) (events: RequestEvent list, user: User) = events, user, DateTime(year, month, day)
 let When (command: Command) (events: RequestEvent list, user: User, today: DateTime) = events, user, today, command
+let WhenHistory (command: Command) (events: RequestEvent list, user: User, today: DateTime) = events, user, today, command
 let Then expected message (events: RequestEvent list, user: User, today: DateTime, command: Command) =
-    let evolveGlobalState (userStates: Map<UserId, Logic.UserRequestsState>) (event: RequestEvent) =
+    let evolveGlobalState (userStates: Map<UserId, UserRequestsState>) (event: RequestEvent) =
         let userState = defaultArg (Map.tryFind event.Request.UserId userStates) Map.empty
         let newUserState = Logic.evolveUserRequests userState event
         userStates.Add (event.Request.UserId, newUserState)
+    
+    let historyGlobal (userHistory: UserHistory) (event: RequestEvent) =
+        let requestState = Logic.evolveRequest NotCreated event
+        let newUserRequests = requestState::userHistory
+        newUserRequests
 
     let globalState = Seq.fold evolveGlobalState Map.empty events
+    let globalHistory = List.fold historyGlobal List.empty events
     let userRequestsState = defaultArg (Map.tryFind command.UserId globalState) Map.empty
-    let result = Logic.decide today userRequestsState user command
+    let result = Logic.decide today userRequestsState globalHistory user command
     Expect.equal result expected message
 
 open System
@@ -300,5 +307,51 @@ let balanceTests =
       |> AndDateIs (2019, 01, 7)
       |> When (BalanceRequest (1))
       |> Then (Ok [RequestBalance balance]) "The request balance should be equals"
+    }
+  ]
+
+
+[<Tests>]
+let historyTests =
+  testList "History tests" [
+    test "get history" {
+      let userInfo : UserInfo = {
+        UserId = 1
+        EnteredDate = DateTime(2018, 01, 01)
+      }
+
+      let pastRequest1 = {
+        UserId = 1
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2017, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2017, 12, 28); HalfDay = PM } 
+      }
+
+      let futurRequest = {
+        UserId = 1
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2019, 12, 28); HalfDay = AM }
+        End = { Date = DateTime(2019, 12, 28); HalfDay = PM } 
+      }
+      
+      let history : UserHistory = [
+        CanceledByManager futurRequest      
+        PendingCancellation futurRequest        
+        Validated futurRequest
+        PendingValidation futurRequest        
+      ]
+
+      Given [ 
+        RequestCreated pastRequest1
+        RequestValidated pastRequest1        
+        RequestCreated futurRequest
+        RequestValidated futurRequest 
+        RequestPendingCancellation futurRequest 
+        RequestCanceledByManager futurRequest 
+      ]
+      |> ConnectedAs (Employee userInfo)
+      |> AndDateIs (2019, 01, 7)
+      |> WhenHistory (HistoryRequest (1))
+      |> Then (Ok [RequestHistory history]) "The request history should contains 4 stuff"
     }
   ]
