@@ -51,7 +51,7 @@ type RequestState =
         | CanceledByManager _ -> false
         | CancellationRefused _ -> true
         | Refused _ -> false
-
+   
 type UserHistory = List<RequestState>
 
 type RequestEvent =
@@ -74,8 +74,8 @@ type RequestEvent =
         | RequestPendingCancellation request -> request
         | RequestRefused request -> request
         | RequestCancellationRefused request -> request
-        | RequestBalance _ -> invalidOp "balance"
-        | RequestHistory _ -> invalidOp "history"
+        | RequestBalance _ -> invalidOp "balance" 
+        | RequestHistory _ -> invalidOp "history"  
     member this.Balance =
         match this with
         | RequestBalance balance -> balance
@@ -113,7 +113,12 @@ module Logic =
         newUserRequests
 
     let overlapsWith request1 request2 =
-        request1.Start = request2.Start || request1.End = request2.End
+        if request1.End.Date < request2.Start.Date || request2.End.Date < request1.Start.Date then
+            false
+        elif request1.End.Date = request2.Start.Date && request1.End.HalfDay = AM && request2.Start.HalfDay = PM then
+            false
+        else
+            true //TODO: write a function that checks if 2 requests overlap
 
     let overlapsWithAnyRequest (otherRequests: TimeOffRequest seq) request =
         Seq.exists (fun element -> overlapsWith element request) otherRequests
@@ -178,31 +183,31 @@ module Logic =
             result <- result - 0.5
         result
 
-    let monthPresence (userEnteredDate: DateTime) (year: int) =
-        let nbMonth = if userEnteredDate.Year.Equals(year) then 12 - (userEnteredDate.Month-1) else 12
+    let monthPresence (userEnteredDate: DateTime) (year: int) =        
+        let nbMonth = if userEnteredDate.Year.Equals(year) then 12 - (userEnteredDate.Month-1) else 12                           
         nbMonth
 
     let getBalance (today: DateTime) activeUserRequests userId (userEnteredDate: DateTime)  =
-
-        let earnedThisYear = (25.0 / 12.0) * float (today.Month - 1)
+        
+        let earnedThisYear = (25.0 / 12.0) * float (today.Month - 1) 
 
         let enteredDate = userEnteredDate
         let mutable counter = enteredDate.Year
         let mutable report = 0.
-
+        
         while counter < (today.Year) do
-            let oldBalance =
+            let oldBalance = 
                 Seq.sumBy computeTimeOff (activeUserRequests
                 |> Seq.where (fun (request) -> request.Start.Date.Year.Equals(counter)))
             let oldEarned = (25.0 / 12.0) * float (monthPresence userEnteredDate counter)
             report <- report + (oldEarned - oldBalance)
             counter <- counter + 1
 
-        let taken =
+        let taken = 
             Seq.sumBy computeTimeOff (activeUserRequests
             |> Seq.where (fun (request) -> request.Start.Date.Year.Equals(today.Year) && request.Start.Date <= today))
 
-        let planned =
+        let planned = 
             Seq.sumBy computeTimeOff (activeUserRequests
             |> Seq.where (fun (request) -> request.Start.Date.Year.Equals(today.Year) && request.Start.Date > today))
 
@@ -214,9 +219,9 @@ module Logic =
             Planned = planned
             Balance = earnedThisYear + report - (taken + planned)
         }
-
-    let getHistory (today: DateTime) (userHistory: UserHistory) =
-        let history : UserHistory =
+                
+    let getHistory (today: DateTime) (userHistory: UserHistory) = 
+        let history : UserHistory = 
             userHistory
             |> List.map (fun (state) -> state)
             |> List.where (fun state -> state.Request.Start.Date.Year = today.Year)
@@ -225,7 +230,7 @@ module Logic =
 
 
     let decide (today: DateTime) (userRequests: UserRequestsState) (userHistory: UserHistory) (user: User) (command: Command) =
-        let relatedUserId = command.UserId
+        let relatedUserId = command.UserId                   
         match user with
         | Employee userInfo when userInfo.UserId <> relatedUserId ->
             Error "Unauthorizeed"
@@ -271,7 +276,7 @@ module Logic =
                     refuseCancellation requestState
 
             | BalanceRequest (userId) ->
-                match user with
+                match user with 
                 | Employee userInfo ->
                     let activeUserRequests =
                         userRequests
@@ -286,5 +291,5 @@ module Logic =
                     Error "Unauthorized"
 
             | HistoryRequest (userId) ->
-                let history = getHistory today userHistory
+                let history = getHistory today userHistory                    
                 Ok [RequestHistory history]

@@ -207,7 +207,7 @@ let main _ =
 
     //let eventStore = InMemoryStore.Create<UserId, RequestEvent>()
     let storagePath = System.IO.Path.Combine(contentRoot, "../../../.storage", "userRequests")
-    let eventStore = FileSystemStore.Create<UserId, RequestEvent>(storagePath, id)
+    let eventStore = FileSystemStore.Create<UserId, RequestEvent>(storagePath, sprintf "%d")
 
     let webRoot = Path.Combine(contentRoot, "WebRoot")
     WebHostBuilder()
