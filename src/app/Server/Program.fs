@@ -81,7 +81,6 @@ module HttpHandlers =
                     return! (BAD_REQUEST message) next ctx
             }
 
-<<<<<<< HEAD
     let cancelRequest (handleCommand: Command -> Result<RequestEvent list, string>) =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
@@ -120,20 +119,6 @@ module HttpHandlers =
                 | Ok _ -> return! Successful.NO_CONTENT next ctx
                 | Error message ->
                     return! (BAD_REQUEST message) next ctx
-=======
-    let getUserBalance (authentifiedUser: User) (userName: string) =
-        fun (next: HttpFunc) (ctx: HttpContext) ->
-            task {
-                let balance : UserVacationBalance = {
-                  UserName = userName
-                  BalanceYear = 2018
-                  CarriedOver = 0.0
-                  PortionAccruedToDate = 10.0
-                  TakenToDate = 0.0
-                  CurrentBalance = 10.
-                }
-                return! json balance next ctx
->>>>>>> upstream/add-gui
             }
 
 // ---------------------------------
@@ -159,6 +144,7 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
 
         // Finally, return the result
         result
+
     choose [
         subRoute "/api"
             (choose [
@@ -166,22 +152,16 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
                 subRoute "/timeoff"
                     (Auth.Handlers.requiresJwtTokenForAPI (fun user ->
                         choose [
-<<<<<<< HEAD
-                            GET >=> route "/balance" >=> HttpHandlers.balanceRequest (handleCommand user)
-                            GET >=> route "/history" >=> HttpHandlers.historyRequest (handleCommand user)
-                            POST >=> route "/request" >=> HttpHandlers.requestTimeOff (handleCommand user)
-                            POST >=> route "/validate-request" >=> HttpHandlers.validateRequest (handleCommand user)
-                            POST >=> route "/cancel-request" >=> HttpHandlers.cancelRequest (handleCommand user)
-                            POST >=> route "/refuse-request" >=> HttpHandlers.refuseRequest (handleCommand user)
-                            POST >=> route "/refuse-cancellation-request" >=> HttpHandlers.refuseCancellationRequest (handleCommand user)
-=======
                             POST >=>
                                 (choose [                        
                                     routex "/request/?" >=> HttpHandlers.requestTimeOff (handleCommand user)
                                     routex "/validate-request/?" >=> HttpHandlers.validateRequest (handleCommand user)
+                                    routex "/cancel-request/?" >=> HttpHandlers.cancelRequest (handleCommand user)
+                                    routex "/refuse-request/?" >=> HttpHandlers.refuseRequest (handleCommand user)
+                                    routex "/refuse-cancellation-request/?" >=> HttpHandlers.refuseCancellationRequest (handleCommand user)
                                 ])
-                            GET >=> routef "/user-balance/%s" (HttpHandlers.getUserBalance user)
->>>>>>> upstream/add-gui
+                            GET >=> routef "/balance/%s" >=> HttpHandlers.balanceRequest (handleCommand user)
+                            GET >=> routef "/history/%s" >=> HttpHandlers.historyRequest (handleCommand user)
                         ]
                     ))
             ])

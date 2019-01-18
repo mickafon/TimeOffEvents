@@ -30,7 +30,6 @@ type TimeOffRequest = {
     End: Boundary
 }
 
-<<<<<<< HEAD
 type TimeOffBalance = {
     UserId: UserId
     EarnedThisYear: float
@@ -39,14 +38,3 @@ type TimeOffBalance = {
     Planned: float
     Balance: float
 }
-=======
-[<CLIMutable>]
-type UserVacationBalance = {
-  UserName : UserId
-  BalanceYear: int
-  CarriedOver: float
-  PortionAccruedToDate: float
-  TakenToDate: float
-  CurrentBalance: float
-}
->>>>>>> upstream/add-gui
