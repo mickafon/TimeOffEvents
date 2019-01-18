@@ -1,7 +1,7 @@
 module ServerCode.App
 
 open TimeOff
-open EventStorage
+open Storage.Events
 
 open System
 open System.IO
@@ -11,8 +11,10 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
+open Giraffe.Serialization.Json
 open Giraffe.HttpStatusCodeHandlers.RequestErrors
 open FSharp.Control.Tasks
+open Thoth.Json.Giraffe
 
 // ---------------------------------
 // Handlers
@@ -79,6 +81,7 @@ module HttpHandlers =
                     return! (BAD_REQUEST message) next ctx
             }
 
+<<<<<<< HEAD
     let cancelRequest (handleCommand: Command -> Result<RequestEvent list, string>) =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
@@ -117,6 +120,20 @@ module HttpHandlers =
                 | Ok _ -> return! Successful.NO_CONTENT next ctx
                 | Error message ->
                     return! (BAD_REQUEST message) next ctx
+=======
+    let getUserBalance (authentifiedUser: User) (userName: string) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let balance : UserVacationBalance = {
+                  UserName = userName
+                  BalanceYear = 2018
+                  CarriedOver = 0.0
+                  PortionAccruedToDate = 10.0
+                  TakenToDate = 0.0
+                  CurrentBalance = 10.
+                }
+                return! json balance next ctx
+>>>>>>> upstream/add-gui
             }
 
 // ---------------------------------
@@ -145,10 +162,11 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
     choose [
         subRoute "/api"
             (choose [
-                route "/users/login" >=> POST >=> Auth.Handlers.login
+                route "/users/login/" >=> POST >=> Auth.Handlers.login
                 subRoute "/timeoff"
                     (Auth.Handlers.requiresJwtTokenForAPI (fun user ->
                         choose [
+<<<<<<< HEAD
                             GET >=> route "/balance" >=> HttpHandlers.balanceRequest (handleCommand user)
                             GET >=> route "/history" >=> HttpHandlers.historyRequest (handleCommand user)
                             POST >=> route "/request" >=> HttpHandlers.requestTimeOff (handleCommand user)
@@ -156,10 +174,18 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
                             POST >=> route "/cancel-request" >=> HttpHandlers.cancelRequest (handleCommand user)
                             POST >=> route "/refuse-request" >=> HttpHandlers.refuseRequest (handleCommand user)
                             POST >=> route "/refuse-cancellation-request" >=> HttpHandlers.refuseCancellationRequest (handleCommand user)
+=======
+                            POST >=>
+                                (choose [                        
+                                    routex "/request/?" >=> HttpHandlers.requestTimeOff (handleCommand user)
+                                    routex "/validate-request/?" >=> HttpHandlers.validateRequest (handleCommand user)
+                                ])
+                            GET >=> routef "/user-balance/%s" (HttpHandlers.getUserBalance user)
+>>>>>>> upstream/add-gui
                         ]
                     ))
             ])
-        setStatusCode 404 >=> text "Not Found" ]
+        RequestErrors.NOT_FOUND "Not found" ]
 
 // ---------------------------------
 // Error handler
@@ -192,6 +218,7 @@ let configureApp (eventStore: IStore<UserId, RequestEvent>) (app: IApplicationBu
 let configureServices (services: IServiceCollection) =
     services.AddCors() |> ignore
     services.AddGiraffe() |> ignore
+    services.AddSingleton<IJsonSerializer>(ThothSerializer()) |> ignore
 
 let configureLogging (builder: ILoggingBuilder) =
     let filter (l: LogLevel) = l.Equals LogLevel.Error
@@ -203,7 +230,7 @@ let main _ =
 
     //let eventStore = InMemoryStore.Create<UserId, RequestEvent>()
     let storagePath = System.IO.Path.Combine(contentRoot, "../../../.storage", "userRequests")
-    let eventStore = FileSystemStore.Create<UserId, RequestEvent>(storagePath, sprintf "%d")
+    let eventStore = FileSystemStore.Create<UserId, RequestEvent>(storagePath, id)
 
     let webRoot = Path.Combine(contentRoot, "WebRoot")
     WebHostBuilder()
