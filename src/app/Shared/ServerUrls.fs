@@ -4,7 +4,13 @@
 module ServerUrls =
 
     [<Literal>]
-    let Login = "/api/users/login/"
+    let Login = "/api/users/login"
 
     [<Literal>]
-    let UserBalance = "/api/timeoff/user-balance/"
+    let Request = "/api/timeoff/request"
+
+    [<Literal>]
+    let UserBalance = "/api/timeoff/balance"
+
+    [<Literal>]
+    let UserHistory = "/api/timeoff/history"
