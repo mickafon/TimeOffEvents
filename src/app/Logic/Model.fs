@@ -6,6 +6,38 @@ open System
 // and our 2 main functions `decide` and `evolve`
 module Logic =
 
+    type RequestState =
+        | NotCreated
+        | PendingValidation of TimeOffRequest
+        | Validated of TimeOffRequest
+        | Refused of TimeOffRequest
+        | PendingCancellation of TimeOffRequest
+        | CancellationRefused of TimeOffRequest
+        | CanceledByEmployee of TimeOffRequest
+        | CanceledByManager of TimeOffRequest with
+        member this.Request =
+            match this with
+            | NotCreated -> invalidOp "Not created"
+            | PendingValidation request
+            | Validated request -> request
+            | PendingCancellation request
+            | CanceledByEmployee request -> request
+            | CanceledByManager request -> request
+            | CancellationRefused request -> request
+            | Refused request -> request
+        member this.IsActive =
+            match this with
+            | NotCreated -> false
+            | PendingValidation _
+            | Validated _ -> true
+            | PendingCancellation _ -> true
+            | CanceledByEmployee _ -> false
+            | CanceledByManager _ -> false
+            | CancellationRefused _ -> true
+            | Refused _ -> false
+
+    type UserRequestsState = Map<Guid, RequestState>
+
     let evolveRequest state event =
         match event with
         | RequestCreated request -> PendingValidation request
@@ -14,17 +46,17 @@ module Logic =
         | RequestCanceledByManager request -> CanceledByManager request
         | RequestPendingCancellation request -> PendingCancellation request
         | RequestBalance _ -> invalidOp "balance"
-        | RequestHistory _ -> invalidOp "history"
+        //| RequestHistory _ -> invalidOp "history"
 
     let evolveUserRequests (userRequests: UserRequestsState) (event: RequestEvent) =
         let requestState = defaultArg (Map.tryFind event.Request.RequestId userRequests) NotCreated
         let newRequestState = evolveRequest requestState event
         userRequests.Add (event.Request.RequestId, newRequestState)
 
-    let getAllUserRequests (userRequests: UserHistory) (event: RequestEvent) =
-        let requestState = evolveRequest NotCreated event
-        let newUserRequests = requestState::userRequests
-        newUserRequests
+    //let getAllUserRequests (userRequests: UserHistory) (event: RequestEvent) =
+    //    let requestState = evolveRequest NotCreated event
+    //    let newUserRequests = requestState::userRequests
+    //    newUserRequests
 
     let overlapsWith request1 request2 =
         if request1.End.Date < request2.Start.Date || request2.End.Date < request1.Start.Date then
@@ -134,16 +166,16 @@ module Logic =
             Balance = earnedThisYear + report - (taken + planned)
         }
                 
-    let getHistory (today: DateTime) (userHistory: UserHistory) = 
-        let history : UserHistory = 
-            userHistory
-            |> List.map (fun (state) -> state)
-            |> List.where (fun state -> state.Request.Start.Date.Year = today.Year)
-            |> List.map (fun state -> state)
-        history
+    //let getHistory (today: DateTime) (userHistory: UserHistory) = 
+    //    let history : UserHistory = 
+    //        userHistory
+    //        |> List.map (fun (state) -> state)
+    //        |> List.where (fun state -> state.Request.Start.Date.Year = today.Year)
+    //        |> List.map (fun state -> state)
+    //    history
 
 
-    let decide (today: DateTime) (userRequests: UserRequestsState) (userHistory: UserHistory) (user: User) (command: Command) =
+    let decide (today: DateTime) (userRequests: UserRequestsState) (user: User) (command: Command) =
         let relatedUserId = command.UserId                   
         match user with
         | Employee userInfo when userInfo.UserId <> relatedUserId ->
@@ -204,6 +236,6 @@ module Logic =
                 | _ ->
                     Error "Unauthorized"
 
-            | HistoryRequest (userId) ->
-                let history = getHistory today userHistory                    
-                Ok [RequestHistory history]
+            //| HistoryRequest (userId) ->
+            //    let history = getHistory today userHistory                    
+            //    Ok [RequestHistory history]

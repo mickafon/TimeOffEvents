@@ -62,7 +62,7 @@ module HttpHandlers =
                 let command = HistoryRequest userAndRequestId.UserId
                 let result = handleCommand command
                 match result with
-                | Ok [RequestHistory history] -> return! json history next ctx
+                //| Ok [RequestHistory history] -> return! json history next ctx
                 | Ok _ -> return! Successful.NO_CONTENT next ctx
                 | Error message ->
                     return! (BAD_REQUEST message) next ctx
@@ -131,11 +131,11 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
 
         let eventStream = eventStore.GetStream(userId)
         let state = eventStream.ReadAll() |> Seq.fold Logic.evolveUserRequests Map.empty
-        let history = eventStream.ReadAll() |> Seq.fold Logic.getAllUserRequests List.Empty
+        //let history = eventStream.ReadAll() |> Seq.fold Logic.getAllUserRequests List.Empty
         let today = DateTime.Today
 
         // Decide how to handle the command
-        let result = Logic.decide today state history user command
+        let result = Logic.decide today state user command
 
         // Save events in case of success
         match result with
