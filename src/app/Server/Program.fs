@@ -11,10 +11,8 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
-open Giraffe.Serialization.Json
 open Giraffe.HttpStatusCodeHandlers.RequestErrors
 open FSharp.Control.Tasks
-open Thoth.Json.Giraffe
 
 // ---------------------------------
 // Handlers
@@ -62,7 +60,7 @@ module HttpHandlers =
                 let command = HistoryRequest userAndRequestId.UserId
                 let result = handleCommand command
                 match result with
-                //| Ok [RequestHistory history] -> return! json history next ctx
+                | Ok [RequestHistory history] -> return! json history next ctx
                 | Ok _ -> return! Successful.NO_CONTENT next ctx
                 | Error message ->
                     return! (BAD_REQUEST message) next ctx
@@ -131,11 +129,11 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
 
         let eventStream = eventStore.GetStream(userId)
         let state = eventStream.ReadAll() |> Seq.fold Logic.evolveUserRequests Map.empty
-        //let history = eventStream.ReadAll() |> Seq.fold Logic.getAllUserRequests List.Empty
+        let history = eventStream.ReadAll() |> Seq.fold Logic.getAllUserRequests List.Empty
         let today = DateTime.Today
 
         // Decide how to handle the command
-        let result = Logic.decide today state user command
+        let result = Logic.decide today state history user command
 
         // Save events in case of success
         match result with
@@ -144,7 +142,6 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
 
         // Finally, return the result
         result
-
     choose [
         subRoute "/api"
             (choose [
@@ -195,7 +192,6 @@ let configureApp (eventStore: IStore<UserId, RequestEvent>) (app: IApplicationBu
 let configureServices (services: IServiceCollection) =
     services.AddCors() |> ignore
     services.AddGiraffe() |> ignore
-    services.AddSingleton<IJsonSerializer>(ThothSerializer()) |> ignore
 
 let configureLogging (builder: ILoggingBuilder) =
     let filter (l: LogLevel) = l.Equals LogLevel.Error

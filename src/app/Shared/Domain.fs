@@ -59,6 +59,38 @@ type Command =
         | BalanceRequest (userId) -> userId
         | HistoryRequest (userId) -> userId
 
+type RequestState =
+    | NotCreated
+    | PendingValidation of TimeOffRequest
+    | Validated of TimeOffRequest
+    | Refused of TimeOffRequest
+    | PendingCancellation of TimeOffRequest
+    | CancellationRefused of TimeOffRequest
+    | CanceledByEmployee of TimeOffRequest
+    | CanceledByManager of TimeOffRequest with
+    member this.Request =
+        match this with
+        | NotCreated -> invalidOp "Not created"
+        | PendingValidation request
+        | Validated request -> request
+        | PendingCancellation request
+        | CanceledByEmployee request -> request
+        | CanceledByManager request -> request
+        | CancellationRefused request -> request
+        | Refused request -> request
+    member this.IsActive =
+        match this with
+        | NotCreated -> false
+        | PendingValidation _
+        | Validated _ -> true
+        | PendingCancellation _ -> true
+        | CanceledByEmployee _ -> false
+        | CanceledByManager _ -> false
+        | CancellationRefused _ -> true
+        | Refused _ -> false
+
+type UserHistory = List<RequestState>
+
 type RequestEvent =
     | RequestCreated of TimeOffRequest
     | RequestValidated of TimeOffRequest
@@ -68,7 +100,7 @@ type RequestEvent =
     | RequestCancellationRefused of TimeOffRequest
     | RequestRefused of TimeOffRequest
     | RequestBalance of TimeOffBalance
-    //| RequestHistory of UserHistory
+    | RequestHistory of UserHistory
     with
     member this.Request =
         match this with
@@ -80,13 +112,16 @@ type RequestEvent =
         | RequestRefused request -> request
         | RequestCancellationRefused request -> request
         | RequestBalance _ -> invalidOp "balance" 
-        //| RequestHistory _ -> invalidOp "history"  
+        | RequestHistory _ -> invalidOp "history"  
     member this.Balance =
         match this with
         | RequestBalance balance -> balance
         | _ -> invalidOp "request"
-    //member this.History =
-        //match this with
-        //| RequestHistory history -> history
-        //| _ -> invalidOp "request"
+    member this.History =
+        match this with
+        | RequestHistory history -> history
+        | _ -> invalidOp "request"
 
+
+
+type UserRequestsState = Map<Guid, RequestState>
