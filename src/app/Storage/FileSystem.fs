@@ -23,7 +23,8 @@ type private FileStream<'TValue> (path: string) =
       use writer = new StreamWriter(stream)
       for value in values do
         let line = Serialization.serialize value
-        writer.WriteLine line
+        if not (line.Contains("History")) && not (line.Contains("Balance")) then
+            writer.WriteLine line
 
 type private DirectoryStore<'TKey, 'TValue when 'TKey: comparison> (path: string, keyFormatter: 'TKey -> string) =
   do
