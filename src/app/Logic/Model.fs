@@ -233,7 +233,7 @@ module Logic =
         let relatedUserId = command.UserId                   
         match user with
         | Employee userInfo when userInfo.UserId <> relatedUserId ->
-            Error "Unauthorizeed"
+            Error "Unauthorized"
         | _ ->
             match command with
             | RequestTimeOff request ->
