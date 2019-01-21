@@ -1,173 +1,352 @@
 {
-	"id": "7d1f3ca1-241b-b63a-9a3a-0fc8007a1409",
-	"name": "TimeOff",
-	"description": "",
-	"order": [
-		"d6963297-e62b-62f2-d19b-86029bcb6386",
-		"ec7cd889-924e-ba56-27d8-8e6e3d15e4f3",
-		"2fca9e1f-0adf-2fbb-6e9d-a86b06cf1f9d",
-		"ca33754b-9d6f-c6e6-50d2-8f56ee62a8e7",
-		"faaff133-ef31-b52a-6607-713ec35ad572",
-		"55d20998-8640-0a7d-899f-db822de28a3a",
-		"15071402-3770-2ad4-02f2-5cda293dfa73",
-		"caefa218-052f-ae4a-e23b-34ee4b564abc"
-	],
-	"folders": [],
-	"timestamp": 0,
-	"owner": "2085220",
-	"public": false,
-	"requests": [
+	"info": {
+		"_postman_id": "50aa067f-e634-4e87-b9b3-1b0ac365cd4a",
+		"name": "f#",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
 		{
-			"id": "15071402-3770-2ad4-02f2-5cda293dfa73",
-			"headers": "Authorization: eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0._6-PPqTGnFlBLeVhCcjifra3qJQnOS7UQBVQSYG4qrKCh8gLENEhLTrbfpy1qDTve2OfCX5b8rHSN8CPDpOtdFke79Z1sUGH.SNftgvoY638K3VrCdLvuqg.FRpKj472fmPirr4xlhd3qalHHduT7rrKsKyfK3QKtKkQjtE3MsQd8uMG92CoKF45XaWmQqc72e9Rlf8sAzwfvtyYaRqZNFwkSFvwaY6f97nm1OwQ28cgUgIeZdXnyYqNmMtjVC8t1rmdOIKqonzO-w.Ag7Y_ewqVdBX-glq2fe_yB16IulI2g8yT7ztK02vaxw\n",
-			"url": "http://localhost:5000/api/timeoff/history?UserId=1",
-			"preRequestScript": null,
-			"pathVariables": {},
-			"method": "GET",
-			"data": [],
-			"dataMode": "raw",
-			"tests": null,
-			"currentHelper": "normal",
-			"helperAttributes": {},
-			"time": 1548085287538,
-			"name": "HistoryRequest",
-			"description": "",
-			"collectionId": "7d1f3ca1-241b-b63a-9a3a-0fc8007a1409",
-			"responses": [],
-			"rawModeData": ""
+			"name": "login employee",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"UserName\":\"manager\",\"Password\":\"manager\",\"PasswordId\":\"9903ED01-A73C-4874-8ABF-D2678E3AE23D\"}"
+				},
+				"url": {
+					"raw": "localhost:5000/api/users/login",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"users",
+						"login"
+					]
+				},
+				"description": "login"
+			},
+			"response": []
 		},
 		{
-			"id": "2fca9e1f-0adf-2fbb-6e9d-a86b06cf1f9d",
-			"headers": "Content-Type: application/json\nAuthorization: eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0._6-PPqTGnFlBLeVhCcjifra3qJQnOS7UQBVQSYG4qrKCh8gLENEhLTrbfpy1qDTve2OfCX5b8rHSN8CPDpOtdFke79Z1sUGH.SNftgvoY638K3VrCdLvuqg.FRpKj472fmPirr4xlhd3qalHHduT7rrKsKyfK3QKtKkQjtE3MsQd8uMG92CoKF45XaWmQqc72e9Rlf8sAzwfvtyYaRqZNFwkSFvwaY6f97nm1OwQ28cgUgIeZdXnyYqNmMtjVC8t1rmdOIKqonzO-w.Ag7Y_ewqVdBX-glq2fe_yB16IulI2g8yT7ztK02vaxw\n",
-			"url": "http://localhost:5000/api/timeoff/request",
-			"preRequestScript": null,
-			"pathVariables": {},
-			"method": "POST",
-			"data": [],
-			"dataMode": "raw",
-			"tests": null,
-			"currentHelper": "normal",
-			"helperAttributes": {},
-			"time": 1548085288638,
-			"name": "RequestTimeOff",
-			"description": "",
-			"collectionId": "7d1f3ca1-241b-b63a-9a3a-0fc8007a1409",
-			"responses": [],
-			"rawModeData": "{\n    \"userId\": 1,\n    \"requestId\": \"f1511bdc-5008-4d99-899f-cfef79cd0539\",\n    \"start\": {\n        \"date\": \"2019-07-01T00:00:00\",\n        \"halfDay\": {\n            \"case\": \"AM\"\n        }\n    },\n    \"end\": {\n        \"date\": \"2019-07-01T00:00:00\",\n        \"halfDay\": {\n            \"case\": \"PM\"\n        }\n    }\n}"
+			"name": "login manager",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"UserName\":\"manager\",\"Password\":\"manager\",\"PasswordId\":\"9903ED01-A73C-4874-8ABF-D2678E3AE23D\"}"
+				},
+				"url": {
+					"raw": "localhost:5000/api/users/login",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
 		},
 		{
-			"id": "55d20998-8640-0a7d-899f-db822de28a3a",
-			"headers": "Content-Type: application/json\nAuthorization: eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.pSND--qgcWlJ2mWJYK62GhUBylvd_-mo0mvgUBYcweaYhuE2j_ShOqsuSyJiMOD0V3YWEBmpw18u7b-skkyxeGkpc36AHWpm.ti_oWE3-pdFHzqE68CGHfw.jK9G-az9tZO2REpeU5Is81u9KmuZNkIW4GFT_4HcpQl4DvaGL2ZpI9k6cDFDzmd68N5Cz80iV2Wq8wqOPVsaIg.x8-pciq2pmXzC1n3R6t7FeZl8dcmtpJu-fnT2of9W3w\n",
-			"url": "http://localhost:5000/api/timeoff/refuse-cancellation-request?UserId=1&RequestId=f1511bdc-5008-4d99-899f-cfef79cd0539",
-			"preRequestScript": null,
-			"pathVariables": {},
-			"method": "POST",
-			"data": [],
-			"dataMode": "raw",
-			"tests": null,
-			"currentHelper": "normal",
-			"helperAttributes": {},
-			"time": 1548067362887,
-			"name": "RefuseCancellationRequest",
-			"description": "",
-			"collectionId": "7d1f3ca1-241b-b63a-9a3a-0fc8007a1409",
-			"responses": [],
-			"rawModeData": ""
+			"name": "request",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.ErDcwq92UxSqMNkLTePpHgCRlR7nAeTn6AnfQqGDyeDTGdyOiQvU4laHTBTNDmBZfqXdMYxovzABTxvsrYXx45AsZVdBDuqQ.-ZAVkEB59lkBgiD84Ksppg.Yw5QAudUQAEN231arHCs_lZ7luVGYhVxWk9ZM-WHqB4-96rZzmBw09Ucnq3sQoUsUHxmpoKzCwxjM7LLbDP_1g.AYFtytZ_yBMSY7HL0RCbIVjAKUwAZpMOP2hsI5g8OhQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"userId\": 1,    \n\t\"requestId\": \"f1511bdc-5008-4d99-899f-cfef79cd0539\",    \n\t\"start\": {        \n\t\t\"date\": \"2019-01-12T00:00:00\",        \n\t\t\"halfDay\": {            \n\t\t\t\"case\": \"AM\"        \n\t\t}\n\t},    \n\t\"end\": {\n\t\t\"date\": \"2019-01-12T00:00:00\",\n\t\t\"halfDay\": {\n\t\t\t\"case\": \"PM\"\n\t\t}\n\t}\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/timeoff/request",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"request"
+					]
+				},
+				"description": "create a request"
+			},
+			"response": []
 		},
 		{
-			"id": "ca33754b-9d6f-c6e6-50d2-8f56ee62a8e7",
-			"headers": "Content-Type: application/json\nAuthorization: eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0._6-PPqTGnFlBLeVhCcjifra3qJQnOS7UQBVQSYG4qrKCh8gLENEhLTrbfpy1qDTve2OfCX5b8rHSN8CPDpOtdFke79Z1sUGH.SNftgvoY638K3VrCdLvuqg.FRpKj472fmPirr4xlhd3qalHHduT7rrKsKyfK3QKtKkQjtE3MsQd8uMG92CoKF45XaWmQqc72e9Rlf8sAzwfvtyYaRqZNFwkSFvwaY6f97nm1OwQ28cgUgIeZdXnyYqNmMtjVC8t1rmdOIKqonzO-w.Ag7Y_ewqVdBX-glq2fe_yB16IulI2g8yT7ztK02vaxw\n",
-			"url": "http://localhost:5000/api/timeoff/cancel-request?UserId=1&RequestId=f1511bdc-5008-4d99-899f-cfef79cd0539",
-			"preRequestScript": null,
-			"pathVariables": {},
-			"method": "POST",
-			"data": [],
-			"dataMode": "raw",
-			"tests": null,
-			"currentHelper": "normal",
-			"helperAttributes": {},
-			"time": 1548085286473,
-			"name": "CancelRequest",
-			"description": "",
-			"collectionId": "7d1f3ca1-241b-b63a-9a3a-0fc8007a1409",
-			"responses": [],
-			"rawModeData": ""
+			"name": "validate-request",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.ErDcwq92UxSqMNkLTePpHgCRlR7nAeTn6AnfQqGDyeDTGdyOiQvU4laHTBTNDmBZfqXdMYxovzABTxvsrYXx45AsZVdBDuqQ.-ZAVkEB59lkBgiD84Ksppg.Yw5QAudUQAEN231arHCs_lZ7luVGYhVxWk9ZM-WHqB4-96rZzmBw09Ucnq3sQoUsUHxmpoKzCwxjM7LLbDP_1g.AYFtytZ_yBMSY7HL0RCbIVjAKUwAZpMOP2hsI5g8OhQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:5000/api/timeoff/validate-request?UserId=1&RequestId=f1511bdc-5008-4d99-899f-cfef79cd0539",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"validate-request"
+					],
+					"query": [
+						{
+							"key": "UserId",
+							"value": "1"
+						},
+						{
+							"key": "RequestId",
+							"value": "f1511bdc-5008-4d99-899f-cfef79cd0539"
+						}
+					]
+				},
+				"description": "validate a request"
+			},
+			"response": []
 		},
 		{
-			"id": "caefa218-052f-ae4a-e23b-34ee4b564abc",
-			"headers": "Authorization: eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.jGLGGT_8wC2K30AwbNWo7q6fOXIIgAwAp3LaAhbhubd64zUlO3YiGntePyUiT-6_t33uUOZZn5VcWB_Xgt0Xq0LrllYlcT8J.M3U6Q4-LLF_LKNRrjSkQ2g.fsr8Aaj1tDdfNZBEKbSu8J4uZFIwQYlcM-tQQDgTfw0ivjsBnmaeR1oLLQNw3IPVyrHQEtah9Nzm1eSBX72-D4eAtpkfHwayAT4XFWQSZ41g3aAJ8vIFahZOMY0qAKgGnCy5w-Y3McCAfCQvv4sNrA.FpOD7WpCa1ijl_FGABWCTm2-8YsbM0DjAzb7WVcL1Y8\n",
-			"url": "http://localhost:5000/api/timeoff/balance?UserId=1",
-			"preRequestScript": null,
-			"pathVariables": {},
-			"method": "GET",
-			"data": [],
-			"dataMode": "raw",
-			"tests": null,
-			"currentHelper": "normal",
-			"helperAttributes": {},
-			"time": 1548066530138,
-			"name": "BalanceRequest",
-			"description": "",
-			"collectionId": "7d1f3ca1-241b-b63a-9a3a-0fc8007a1409",
-			"responses": [],
-			"rawModeData": ""
+			"name": "cancel-request",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.ErDcwq92UxSqMNkLTePpHgCRlR7nAeTn6AnfQqGDyeDTGdyOiQvU4laHTBTNDmBZfqXdMYxovzABTxvsrYXx45AsZVdBDuqQ.-ZAVkEB59lkBgiD84Ksppg.Yw5QAudUQAEN231arHCs_lZ7luVGYhVxWk9ZM-WHqB4-96rZzmBw09Ucnq3sQoUsUHxmpoKzCwxjM7LLbDP_1g.AYFtytZ_yBMSY7HL0RCbIVjAKUwAZpMOP2hsI5g8OhQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "localhost:5000/api/timeoff/cancel-request?UserId=1&RequestId=f1511bdc-5008-4d99-899f-cfef79cd0539",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"cancel-request"
+					],
+					"query": [
+						{
+							"key": "UserId",
+							"value": "1"
+						},
+						{
+							"key": "RequestId",
+							"value": "f1511bdc-5008-4d99-899f-cfef79cd0539"
+						}
+					]
+				},
+				"description": "cancel a request"
+			},
+			"response": []
 		},
 		{
-			"id": "d6963297-e62b-62f2-d19b-86029bcb6386",
-			"headers": "Content-Type: application/json\n",
-			"url": "http://localhost:5000/api/users/login",
-			"preRequestScript": "",
-			"pathVariables": {},
-			"method": "POST",
-			"data": [],
-			"dataMode": "raw",
-			"tests": "",
-			"currentHelper": "normal",
-			"helperAttributes": {},
-			"time": 1548063523680,
-			"name": "Login manager",
-			"description": "Login",
-			"collectionId": "7d1f3ca1-241b-b63a-9a3a-0fc8007a1409",
-			"responses": [],
-			"rawModeData": "{\"UserName\":\"manager\",\"Password\":\"manager\",\"PasswordId\":\"9903ED01-A73C-4874-8ABF-D2678E3AE23D\"}"
+			"name": "balance",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.fydAxyex8lgAG585VNK49u8CLBmD8Is1dPaitIGYKdwCtsa81bfOjYR0B3k7q-ie2V7-6R2ip2ohagzt4mPN9CUKJgZJgAm8.ZlhiD9OxUVh5aaAyPcai_Q.mf7_k0gcLcN-IjrhVwnlPiVRzoWhHzXq5B0kOYr-RNUJ3rTr0ig7jiPBfp0DHwyNEaLEifr6iEaEvTUhLuQcD6cPqc0fCwVfpznh_WvHP1H5AkyFC19A_xPRaZnPHhCtfZVItNcuOYgL-IO4VjF1gw.Fm93q4giXksyOQTHg83v1cXzJuBU5Q5c6oAYncIcWaU",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:5000/api/timeoff/balance?UserId=1",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"balance"
+					],
+					"query": [
+						{
+							"key": "UserId",
+							"value": "1"
+						}
+					]
+				},
+				"description": "get the balance of the user"
+			},
+			"response": []
 		},
 		{
-			"id": "ec7cd889-924e-ba56-27d8-8e6e3d15e4f3",
-			"headers": "Content-Type: application/json\n",
-			"url": "http://localhost:5000/api/users/login",
-			"preRequestScript": "",
-			"pathVariables": {},
-			"method": "POST",
-			"data": [],
-			"dataMode": "raw",
-			"tests": "",
-			"currentHelper": "normal",
-			"helperAttributes": {},
-			"time": 1548060645394,
-			"name": "Login employee",
-			"description": "Login",
-			"collectionId": "7d1f3ca1-241b-b63a-9a3a-0fc8007a1409",
-			"responses": [],
-			"rawModeData": "{\"UserName\":\"employee1\",\"Password\":\"employee1\",\"PasswordId\":\"9903ED01-A73C-4874-8ABF-D2678E3AE23D\"}"
+			"name": "history",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0._cHszEN-2E7LZ1f2qlROcNKZB8aDYLhj6sgHDGPfNlUI_xQs64aKvA_EeOqY2Q3wRDGs50I6XA7TU2Oif-3BrxFWp35sgzvi.y3imYgGdCabD8mKyI000eA.jBYT3sfafP3CB9Ra0k0dOy6SCtvdrErNGuTF-6hf7DYsxt7ZmJzibzvzqlPKjW9GS5Mp6mbu33sye77KRWOjb9woqwPONJtm0BUI1Rz13lVKb1kLUBKaE9eTzptngDCfbOwhOY4CgCYBqXEmDTmNaQ.68VXZn78RTnUXVQI6MnbAXRsvax4PQ2HMFXXY9jBa2U",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:5000/api/timeoff/history?UserId=1",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"history"
+					],
+					"query": [
+						{
+							"key": "UserId",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
 		},
 		{
-			"id": "faaff133-ef31-b52a-6607-713ec35ad572",
-			"headers": "Content-Type: application/json\nAuthorization: eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.MMTNjlz2RTg9rEn7vhSeUIzmBMoSqxZdpzTp6WIGvRmVqqXQAd6-Iokp-V6nvY8bqKIBqrdY4Nkr2ihRGsyAJogIV_K6TrT_.DpytnPOKauecqFbO7mjxwg.aUNTCjlUy_qIcMdiZgqJvKU8vCt-_V9Z-yXENsecCccLu2nvh4rvOVjg4Oa3YhiAmsEiKx6cXeS-qHGdwafP4g.PripHSkcGJ7hlU2zB0uN8xPY7wigUTGgD8u9RZXKnlE\n",
-			"url": "http://localhost:5000/api/timeoff/validate-request?UserId=1&RequestId=f1511bdc-5008-4d99-899f-cfef79cd0539",
-			"preRequestScript": null,
-			"pathVariables": {},
-			"method": "POST",
-			"data": [],
-			"dataMode": "raw",
-			"tests": null,
-			"currentHelper": "normal",
-			"helperAttributes": {},
-			"time": 1548067425904,
-			"name": "ValidateRequest",
-			"description": "",
-			"collectionId": "7d1f3ca1-241b-b63a-9a3a-0fc8007a1409",
-			"responses": [],
-			"rawModeData": ""
+			"name": "refuse cancellation request",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.1d0YwCHMaHDBlcCaRuXW3uxF7YBispFGjXDkMw89ipPfxzZnK1Ot_7nBVHAqiZ9SaER7Bibk2Ug2DYwFMgfjkM0S9KOlbICX.KtF317NGHT_ZnZiH3v7d4g.i4zL-XWK1UcqYpQtsCBgDouFPT5GyIQCP82whllH17cwrYBZBWrt8dgFLIiNMu-PLzoZDEgZtr6fMNpKUsH7JZ26QOBWtHHU8GH7bBWcPuGch9414FCk4i2pLABkxFC5vAYFiOqH7200Rsadov-6jA.ad76Cu25FRhOdNvLLlYd3keB-EP9NLWbbLumTM1GrqM",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/timeoff/refuse-cancellation-request?UserId=1&RequestId=f1511bdc-5008-4d99-899f-cfef79cd0539",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"refuse-cancellation-request"
+					],
+					"query": [
+						{
+							"key": "UserId",
+							"value": "1"
+						},
+						{
+							"key": "RequestId",
+							"value": "f1511bdc-5008-4d99-899f-cfef79cd0539"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "refuse request",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.1d0YwCHMaHDBlcCaRuXW3uxF7YBispFGjXDkMw89ipPfxzZnK1Ot_7nBVHAqiZ9SaER7Bibk2Ug2DYwFMgfjkM0S9KOlbICX.KtF317NGHT_ZnZiH3v7d4g.i4zL-XWK1UcqYpQtsCBgDouFPT5GyIQCP82whllH17cwrYBZBWrt8dgFLIiNMu-PLzoZDEgZtr6fMNpKUsH7JZ26QOBWtHHU8GH7bBWcPuGch9414FCk4i2pLABkxFC5vAYFiOqH7200Rsadov-6jA.ad76Cu25FRhOdNvLLlYd3keB-EP9NLWbbLumTM1GrqM",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/timeoff/refuse-request?UserId=1&RequestId=f1511bdc-5008-4d99-899f-cfef79cd0539",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"refuse-request"
+					],
+					"query": [
+						{
+							"key": "UserId",
+							"value": "1"
+						},
+						{
+							"key": "RequestId",
+							"value": "f1511bdc-5008-4d99-899f-cfef79cd0539"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
